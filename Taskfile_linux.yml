@@ -1,0 +1,12 @@
+version: '3'
+
+tasks:
+  build:
+    desc: Build ovirtstat
+    cmds:
+      - go build -v -ldflags="-w -s -X main.commit={{.GIT_COMMIT}}" -o bin/ovirtstat ./cmd/main.go
+
+  clean:
+    desc: Cleans temp files and folders
+    cmds:
+      - rm -rf dist/*

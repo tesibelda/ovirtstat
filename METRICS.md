@@ -1,0 +1,53 @@
+# Metrics
+
+- ovirtstat_apisummary
+  - tags:
+    - ovirt-engine
+  - fields:
+	- hosts (int)
+	- storagedomains (int)
+	- users (int)
+    - version (string)
+	- vms (int)
+- ovirtstat_datacenter
+  - tags:
+    - name
+    - ovirt-engine
+  - fields:
+    - clusters (int)
+	- status (string)
+	- status_code (int) 0-up, 1-maintenance, 2-uninitialized, 3-problematic, 4-contend, 5-notoperational
+- ovirtstat_host
+  - tags:
+    - clustername
+    - dcname
+    - name
+	- id
+    - ovirt-engine
+  - fields:
+    - cpu_cores (int)
+    - cpu_sockets (int)
+    - cpu_speed (float)
+    - cpu_threads (int)
+	- memory_size (int) in bytes
+	- status (string)
+	- status_code (int) 0-up, 1-maintenance, 2..8-misc, 9-error, 10-nonresponsive, 11-nonoperational, 12-down
+- ovirtstat_storagedomain
+  - tags:
+	- id
+    - name
+    - type
+    - ovirt-engine
+  - fields:
+	- available (int) in bytes
+	- commited (int) in bytes
+	- master (bool)
+	- used (int) in bytes
+	- status (string)
+	- status_code (int) 0-active, 1-activating, 2-maintenance, 3-unknown, 4-detaching, 5-unattached, 6-mixed, 7-locked
+- internal_ovirtstat
+  - tags:
+    - ovirt-engine
+  - fields:
+    - sessions_created (int)
+    - gather_time_ns (int)
