@@ -92,11 +92,11 @@ Metric timestamp precision will be set according to the polling interval, so it 
 # Example output
 
 ```plain
-ovirtstat_apisummary,ovirt-engine=myovirt users=7i,vms=7i,version="4.4.10.7-1.0.17.el8",hosts=10i,storagedomains=23i 1677832223000000000
+ovirtstat_apisummary,ovirt-engine=myovirt users=5i,vms=8i,version="4.4.10.7-1.0.17.el8",hosts=5i,storagedomains=23i 1677832223000000000
 ovirtstat_datacenter,name=mydc,id=c3a7efc0-8417-4d1b-bc74-fa6f20d6bf1f,ovirt-engine=myovirt status="up",status_code=0i,clusters=1i 1677832223000000000
 ovirtstat_host,clustername=mycluster,dcname=mydc,id=b3d53f5d-7ec3-43a8-a52a-15fe7dde25c2,name=myhyp01,ovirt-engine=myovirt cpu_threads=2i,memory_size=1622535045120i,status="up",status_code=0i,cpu_cores=16i,cpu_sockets=2i,cpu_speed=800 1677832224000000000
-ovirtstat_storagedomain,id=072cba31-08f3-4a40-9f24-a5ca22ed1d74,name=ovirt-image-repository,ovirt-engine=myovirt,type=image available=0i,commited=0i,master=false,status="unattached",status_code=5i,used=0i 1677832224000000000
-ovirtstat_storagedomain,id=ed413bb2-c6ce-4bea-a790-2533b728ac93,name=mysd01,ovirt-engine=myovirt,type=data available=3233036632064i,commited=16603269824512i,master=true,status="",status_code=3i,used=7761005903872i 1677832224000000000
+ovirtstat_storagedomain,id=072cba31-08f3-4a40-9f24-a5ca22ed1d74,name=ovirt-image-repository,ovirt-engine=myovirt,type=image available=0i,connections=0,commited=0i,external_status="ok",external_status_code=0,master=false,status="unattached",status_code=5i,used=0i 1677832224000000000
+ovirtstat_storagedomain,id=ec413fb2-c6ce-4bea-a790-2533b728ac93,name=mysd01,ovirt-engine=myovirt,type=data available=3233036632064i,connections=7,commited=16603269824512i,external_status="ok",external_status_code=0,master=true,status="",status_code=3i,used=7761005903872i 1677832224000000000
 internal_ovirtstat,ovirt-engine=myovirt sessions_created=1i,gather_time_ns=803780400i 1677832224000000000
 ```
 
