@@ -23,6 +23,7 @@ func (c *OVirtCollector) CollectApiSummaryInfo(
 	var (
 		apiSvc    *ovirtsdk.SystemServiceGetResponse
 		api       *ovirtsdk.Api
+		vms       *ovirtsdk.ApiSummaryItem
 		apitags   = make(map[string]string)
 		apifields = make(map[string]interface{})
 		t         time.Time
@@ -48,7 +49,10 @@ func (c *OVirtCollector) CollectApiSummaryInfo(
 	apifields["hosts"] = api.MustSummary().MustHosts().MustTotal()
 	apifields["storagedomains"] = api.MustSummary().MustStorageDomains().MustTotal()
 	apifields["users"] = api.MustSummary().MustUsers().MustTotal()
-	apifields["vms"] = api.MustSummary().MustUsers().MustTotal()
+	if vms, ok = api.MustSummary().Vms(); ok {
+		apifields["vms_active"], _ = vms.Active()
+		apifields["vms_total"], _ = vms.Total()
+	}
 
 	acc.AddFields("ovirtstat_apisummary", apifields, apitags, t)
 

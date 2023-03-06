@@ -8,7 +8,8 @@
 	- storagedomains (int)
 	- users (int)
     - version (string)
-	- vms (int)
+	- vms_active (int)
+	- vms_total (int)
 - ovirtstat_datacenter
   - tags:
     - name

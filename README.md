@@ -92,7 +92,7 @@ Metric timestamp precision will be set according to the polling interval, so it 
 # Example output
 
 ```plain
-ovirtstat_apisummary,ovirt-engine=myovirt users=5i,vms=8i,version="4.4.10.7-1.0.17.el8",hosts=5i,storagedomains=23i 1677832223000000000
+ovirtstat_apisummary,ovirt-engine=myovirt users=4i,vms_active=5i,vms_total=5i,version="4.4.10.7-1.0.17.el8",hosts=5i,storagedomains=23i 1677832223000000000
 ovirtstat_datacenter,name=mydc,id=c3a7efc0-8417-4d1b-bc74-fa6f20d6bf1f,ovirt-engine=myovirt status="up",status_code=0i,clusters=1i 1677832223000000000
 ovirtstat_host,clustername=mycluster,dcname=mydc,id=b3d53f5d-7ec3-43a8-a52a-15fe7dde25c2,name=myhyp01,ovirt-engine=myovirt,type=rhel cpu_threads=2i,memory_size=1622535045120i,status="up",status_code=0i,cpu_cores=16i,cpu_sockets=2i,cpu_speed=800,reinstallation_required=false,vm_active=5i,vm_migrating=0i,vm_total=5i 1677832224000000000
 ovirtstat_storagedomain,id=072cba31-08f3-4a40-9f24-a5ca22ed1d74,name=ovirt-image-repository,ovirt-engine=myovirt,type=image available=0i,connections=0,commited=0i,external_status="ok",external_status_code=0,master=false,status="unattached",status_code=5i,used=0i 1677832224000000000
