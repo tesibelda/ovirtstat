@@ -21,20 +21,23 @@ func (c *OVirtCollector) CollectHostInfo(
 	acc telegraf.Accumulator,
 ) error {
 	var (
-		status           ovirtsdk.HostStatus
-		cl               *ovirtsdk.Cluster
-		cpu              *ovirtsdk.Cpu
-		cort             *ovirtsdk.CpuTopology
-		hotags           = make(map[string]string)
-		hofields         = make(map[string]interface{})
-		id, name, dcname string
-		clname           string
-		t                time.Time
-		mem, cores       int64
-		sockets, threads int64
-		speed            float64
-		ok               bool
-		err              error
+		status              ovirtsdk.HostStatus
+		htype               ovirtsdk.HostType
+		cl                  *ovirtsdk.Cluster
+		cpu                 *ovirtsdk.Cpu
+		cort                *ovirtsdk.CpuTopology
+		vmsumm              *ovirtsdk.VmSummary
+		hotags              = make(map[string]string)
+		hofields            = make(map[string]interface{})
+		id, name, dcname    string
+		clname              string
+		t                   time.Time
+		mem, cores          int64
+		sockets, threads    int64
+		vmact, vmmig, vmtot int64
+		speed               float64
+		ok, reinstall       bool
+		err                 error
 	)
 
 	if c.conn == nil {
@@ -58,6 +61,7 @@ func (c *OVirtCollector) CollectHostInfo(
 		if !c.filterHosts.Match(name) {
 			continue
 		}
+		htype, _ = host.Type()
 		clname, dcname = "", ""
 		if cl, ok = host.Cluster(); ok {
 			clname = c.clusterName(cl)
@@ -82,20 +86,34 @@ func (c *OVirtCollector) CollectHostInfo(
 		if mem, ok = host.Memory(); !ok {
 			mem = 0
 		}
+		if reinstall, ok = host.ReinstallationRequired(); !ok {
+			reinstall = false
+		}
+		vmact, vmmig, vmtot = 0, 0, 0
+		if vmsumm, ok = host.Summary(); ok {
+			vmact, _ = vmsumm.Active()
+			vmmig, _ = vmsumm.Migrating()
+			vmtot, _ = vmsumm.Total()
+		}
 
 		hotags["clustername"] = clname
 		hotags["dcname"] = dcname
 		hotags["id"] = id
 		hotags["name"] = name
 		hotags["ovirt-engine"] = c.url.Host
+		hotags["type"] = string(htype)
 
 		hofields["cpu_cores"] = cores
 		hofields["cpu_sockets"] = sockets
 		hofields["cpu_speed"] = speed
 		hofields["cpu_threads"] = threads
 		hofields["memory_size"] = mem
+		hofields["reinstallation_required"] = reinstall
 		hofields["status"] = string(status)
 		hofields["status_code"] = hostStatusCode(status)
+		hofields["vm_active"] = vmact
+		hofields["vm_migrating"] = vmmig
+		hofields["vm_total"] = vmtot
 
 		acc.AddFields("ovirtstat_host", hofields, hotags, t)
 	}

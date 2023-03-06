@@ -24,14 +24,19 @@
     - name
 	- id
     - ovirt-engine
+	- type
   - fields:
     - cpu_cores (int)
     - cpu_sockets (int)
     - cpu_speed (float)
     - cpu_threads (int)
 	- memory_size (int) in bytes
+	- reinstallation_required (bool)
 	- status (string)
 	- status_code (int) 0-up, 1-maintenance, 2..8-misc, 9-error, 10-nonresponsive, 11-nonoperational, 12-down
+	- vm_active (int)
+	- vm_migrating (int)
+	- vm_total (int)
 - ovirtstat_storagedomain
   - tags:
 	- id
