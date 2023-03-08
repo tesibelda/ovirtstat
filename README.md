@@ -130,3 +130,6 @@ Tesifonte Belda (https://github.com/tesibelda)
 # License
 
 [The MIT License (MIT)](https://github.com/tesibelda/ovirtstat/blob/master/LICENSE)
+
+Used libraries:
+  go-ovirt [Apache-2.0 license](https://github.com/oVirt/go-ovirt/blob/master/LICENSE.txt)
