@@ -121,7 +121,17 @@ func (c *OVirtCollector) getAllDatacentersVMs(ctx context.Context) error {
 		return err
 	}
 
-	// TODO
+	// Get all VMs
+	vmsService := c.conn.SystemService().VmsService()
+	vmsResponse, err := vmsService.List().Send()
+	if err != nil {
+		return err
+	}
+	vms, ok := vmsResponse.Vms()
+	if !ok {
+		return fmt.Errorf("Could not get VM list or it is empty")
+	}
+	c.vms = vms
 	c.lastVmUpdate = time.Now()
 
 	return nil
@@ -201,6 +211,25 @@ func (c *OVirtCollector) clusterDatacenterName(cl *ovirtsdk.Cluster) string {
 						break
 					}
 				}
+			}
+		}
+	}
+	return name
+}
+
+// hostName returns a host's name from cache
+func (c *OVirtCollector) hostName(ho *ovirtsdk.Host) string {
+	var hoid, id, name string
+	var ok bool
+
+	if id, ok = ho.Id(); !ok {
+		return name
+	}
+	for _, h := range c.hosts.Slice() {
+		if hoid, ok = h.Id(); ok {
+			if hoid == id {
+				name, _ = h.Name()
+				break
 			}
 		}
 	}

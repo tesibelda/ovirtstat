@@ -54,6 +54,24 @@
 	- used (int) in bytes
 	- status (string)
 	- status_code (int) 0-active, 1-activating, 2-maintenance, 3-unknown, 4-detaching, 5-unattached, 6-mixed, 7-locked
+- ovirtstat_vm
+  - tags:
+    - clustername
+    - dcname
+    - hostname
+    - name
+	- id
+    - ovirt-engine
+	- type
+  - fields:
+    - cpu_cores (int)
+    - cpu_sockets (int)
+    - cpu_threads (int)
+	- memory_size (int) in bytes
+	- run_once (bool)
+	- stateless (bool)
+	- status (string)
+	- status_code (int) 0-up, 1-paused, 2..8-misc, 10-unknown, 11-unassigned, 12-notresponding, 13-down
 - internal_ovirtstat
   - tags:
     - ovirt-engine

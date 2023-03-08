@@ -74,7 +74,7 @@ func (c *OVirtCollector) CollectHostInfo(
 			acc.AddError(fmt.Errorf("Cloud not get status for host %s", name))
 			continue
 		}
-		cores, sockets, speed = 0, 0, 0
+		cores, sockets, speed, threads = 0, 0, 0, 0
 		if cpu, ok = host.Cpu(); ok {
 			if cort, ok = cpu.Topology(); ok {
 				cores, _ = cort.Cores()
