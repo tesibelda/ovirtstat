@@ -21,18 +21,18 @@ func (c *OVirtCollector) CollectDatastoresInfo(
 	acc telegraf.Accumulator,
 ) error {
 	var (
-		estatus                   ovirtsdk.ExternalStatus
-		status                    ovirtsdk.StorageDomainStatus
-		sty                       ovirtsdk.StorageDomainType
-		conns                     *ovirtsdk.StorageConnectionSlice
-		sdtags                    = make(map[string]string)
-		sdfields                  = make(map[string]interface{})
-		id, name, stype           string
-		t                         time.Time
-		available, commited, used int64
-		connections               int
-		ok, master                bool
-		err                       error
+		estatus                    ovirtsdk.ExternalStatus
+		status                     ovirtsdk.StorageDomainStatus
+		sty                        ovirtsdk.StorageDomainType
+		conns                      *ovirtsdk.StorageConnectionSlice
+		sdtags                     = make(map[string]string)
+		sdfields                   = make(map[string]interface{})
+		id, name, stype            string
+		t                          time.Time
+		available, committed, used int64
+		connections                int
+		ok, master                 bool
+		err                        error
 	)
 
 	if c.conn == nil {
@@ -57,7 +57,7 @@ func (c *OVirtCollector) CollectDatastoresInfo(
 		if sty, ok = sd.Type(); ok {
 			stype = string(sty)
 		}
-		used, available, commited = 0, 0, 0
+		used, available, committed = 0, 0, 0
 		status, _ = sd.Status()
 		if status != ovirtsdk.STORAGEDOMAINSTATUS_UNATTACHED {
 			if used, ok = sd.Used(); !ok {
@@ -68,8 +68,8 @@ func (c *OVirtCollector) CollectDatastoresInfo(
 				acc.AddError(fmt.Errorf("Cloud not get available for storagedomain %s", name))
 				continue
 			}
-			if commited, ok = sd.Committed(); !ok {
-				commited = 0
+			if committed, ok = sd.Committed(); !ok {
+				committed = 0
 			}
 		}
 		if master, ok = sd.Master(); !ok {
@@ -87,7 +87,7 @@ func (c *OVirtCollector) CollectDatastoresInfo(
 		sdtags["type"] = stype
 
 		sdfields["available"] = available
-		sdfields["commited"] = commited
+		sdfields["committed"] = committed
 		sdfields["connections"] = connections
 		sdfields["external_status"] = string(estatus)
 		sdfields["external_status_code"] = externalStatusCode(estatus)

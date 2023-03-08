@@ -46,7 +46,7 @@
     - ovirt-engine
   - fields:
 	- available (int) in bytes
-	- commited (int) in bytes
+	- committed (int) in bytes
 	- connections (int)
 	- external_status (string)
 	- external_status_code (int) 0-ok, 1-info, 2-warning, 3-error, 4-failure
