@@ -3,6 +3,8 @@
 ovirtstat is an [oVirt](https://www.ovirt.org/) input plugin for [Telegraf](https://github.com/influxdata/telegraf) that gathers status and basic stats from oVirt Engine using [go-ovirt](https://github.com/ovirt/go-ovirt)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/tesibelda/ovirtstat/raw/master/LICENSE)
+[![Go Report Card](https://goreportcard.com/badge/github.com/tesibelda/ovirtstat)](https://goreportcard.com/report/github.com/tesibelda/ovirtstat)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/tesibelda/ovirtstat?display_name=release)
 
 # Compatibility
 
