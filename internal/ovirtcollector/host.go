@@ -61,6 +61,10 @@ func (c *OVirtCollector) CollectHostInfo(
 		if !c.filterHosts.Match(name) {
 			continue
 		}
+		if status, ok = host.Status(); !ok {
+			acc.AddError(fmt.Errorf("Cloud not get status for host %s", name))
+			continue
+		}
 		htype, _ = host.Type()
 		clname, dcname = "", ""
 		if cl, ok = host.Cluster(); ok {
@@ -69,10 +73,6 @@ func (c *OVirtCollector) CollectHostInfo(
 				continue
 			}
 			dcname = c.clusterDatacenterName(cl)
-		}
-		if status, ok = host.Status(); !ok {
-			acc.AddError(fmt.Errorf("Cloud not get status for host %s", name))
-			continue
 		}
 		cores, sockets, speed, threads = 0, 0, 0, 0
 		if cpu, ok = host.Cpu(); ok {
@@ -83,9 +83,7 @@ func (c *OVirtCollector) CollectHostInfo(
 			}
 			speed, _ = cpu.Speed()
 		}
-		if mem, ok = host.Memory(); !ok {
-			mem = 0
-		}
+		mem, _ = host.Memory()
 		if reinstall, ok = host.ReinstallationRequired(); !ok {
 			reinstall = false
 		}
@@ -123,40 +121,40 @@ func (c *OVirtCollector) CollectHostInfo(
 
 // hostStatusCode converts HostStatus to int16 for easy alerting
 func hostStatusCode(status ovirtsdk.HostStatus) int16 {
+	var code int16
 	switch status {
 	case ovirtsdk.HOSTSTATUS_UP:
-		return 0
-	case ovirtsdk.HOSTSTATUS_UNASSIGNED:
-		return 4
-	case ovirtsdk.HOSTSTATUS_REBOOT:
-		return 6
-	case ovirtsdk.HOSTSTATUS_PREPARING_FOR_MAINTENANCE:
-		return 2
-	case ovirtsdk.HOSTSTATUS_PENDING_APPROVAL:
-		return 3
-	case ovirtsdk.HOSTSTATUS_NON_RESPONSIVE:
-		return 10
-	case ovirtsdk.HOSTSTATUS_NON_OPERATIONAL:
-		return 11
+		code = 0
 	case ovirtsdk.HOSTSTATUS_MAINTENANCE:
-		return 1
-	case ovirtsdk.HOSTSTATUS_KDUMPING:
-		return 8
-	case ovirtsdk.HOSTSTATUS_INSTALLING_OS:
-		return 5
-	case ovirtsdk.HOSTSTATUS_INSTALLING:
-		return 5
+		code = 1
+	case ovirtsdk.HOSTSTATUS_PREPARING_FOR_MAINTENANCE:
+		code = 2
+	case ovirtsdk.HOSTSTATUS_PENDING_APPROVAL:
+		code = 3
+	case ovirtsdk.HOSTSTATUS_UNASSIGNED:
+		code = 4
+	case ovirtsdk.HOSTSTATUS_INSTALLING_OS,
+		ovirtsdk.HOSTSTATUS_INSTALLING:
+		code = 5
+	case ovirtsdk.HOSTSTATUS_REBOOT,
+		ovirtsdk.HOSTSTATUS_INITIALIZING:
+		code = 6
 	case ovirtsdk.HOSTSTATUS_INSTALL_FAILED:
-		return 5
-	case ovirtsdk.HOSTSTATUS_INITIALIZING:
-		return 6
+		code = 7
+	case ovirtsdk.HOSTSTATUS_KDUMPING:
+		code = 8
 	case ovirtsdk.HOSTSTATUS_ERROR:
-		return 9
+		code = 9
+	case ovirtsdk.HOSTSTATUS_NON_RESPONSIVE:
+		code = 10
+	case ovirtsdk.HOSTSTATUS_NON_OPERATIONAL:
+		code = 11
 	case ovirtsdk.HOSTSTATUS_DOWN:
-		return 12
+		code = 12
 	case ovirtsdk.HOSTSTATUS_CONNECTING:
-		return 7
+		code = 7
 	default:
-		return 1
+		code = 2
 	}
+	return code
 }

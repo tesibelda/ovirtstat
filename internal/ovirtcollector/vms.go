@@ -59,6 +59,10 @@ func (c *OVirtCollector) CollectVmsInfo(
 		if !c.filterVms.Match(name) {
 			continue
 		}
+		if status, ok = vm.Status(); !ok {
+			acc.AddError(fmt.Errorf("Cloud not get status for VM %s", name))
+			continue
+		}
 		if ho, ok = vm.Host(); ok {
 			hostname = c.hostName(ho)
 			if !c.filterHosts.Match(hostname) {
@@ -74,10 +78,6 @@ func (c *OVirtCollector) CollectVmsInfo(
 			}
 			dcname = c.clusterDatacenterName(cl)
 		}
-		if status, ok = vm.Status(); !ok {
-			acc.AddError(fmt.Errorf("Cloud not get status for VM %s", name))
-			continue
-		}
 		cores, sockets, threads = 0, 0, 0
 		if cpu, ok = vm.Cpu(); ok {
 			if cort, ok = cpu.Topology(); ok {
@@ -86,9 +86,7 @@ func (c *OVirtCollector) CollectVmsInfo(
 				threads, _ = cort.Threads()
 			}
 		}
-		if mem, ok = vm.Memory(); !ok {
-			mem = 0
-		}
+		mem, _ = vm.Memory()
 		stateless, _ = vm.Stateless()
 		runOnce, _ = vm.RunOnce()
 
@@ -117,38 +115,38 @@ func (c *OVirtCollector) CollectVmsInfo(
 
 // vmStatusCode converts VmStatus to int16 for easy alerting
 func vmStatusCode(status ovirtsdk.VmStatus) int16 {
+	var code int16
 	switch status {
 	case ovirtsdk.VMSTATUS_UP:
-		return 0
+		code = 0
 	case ovirtsdk.VMSTATUS_PAUSED:
-		return 1
+		code = 1
 	case ovirtsdk.VMSTATUS_SUSPENDED:
-		return 2
+		code = 2
 	case ovirtsdk.VMSTATUS_POWERING_UP:
-		return 3
+		code = 3
 	case ovirtsdk.VMSTATUS_WAIT_FOR_LAUNCH:
-		return 4
+		code = 4
 	case ovirtsdk.VMSTATUS_SAVING_STATE:
-		return 5
+		code = 5
 	case ovirtsdk.VMSTATUS_MIGRATING:
-		return 6
+		code = 6
 	case ovirtsdk.VMSTATUS_POWERING_DOWN:
-		return 7
+		code = 7
 	case ovirtsdk.VMSTATUS_RESTORING_STATE:
-		return 9
+		code = 9
 	case ovirtsdk.VMSTATUS_REBOOT_IN_PROGRESS:
-		return 8
-	case ovirtsdk.VMSTATUS_UNKNOWN:
-		return 10
+		code = 8
 	case ovirtsdk.VMSTATUS_IMAGE_LOCKED:
-		return 11
+		code = 11
 	case ovirtsdk.VMSTATUS_UNASSIGNED:
-		return 12
+		code = 12
 	case ovirtsdk.VMSTATUS_NOT_RESPONDING:
-		return 13
+		code = 13
 	case ovirtsdk.VMSTATUS_DOWN:
-		return 14
+		code = 14
 	default:
-		return 10
+		code = 10
 	}
+	return code
 }
