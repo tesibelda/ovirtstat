@@ -1,6 +1,6 @@
 # ovirtstat execd input for telegraf
 
-ovirtstat is an [oVirt](https://www.ovirt.org/) input plugin for [Telegraf](https://github.com/influxdata/telegraf) that gathers status and basic stats from oVirt Engine using [go-ovirt](https://github.com/ovirt/go-ovirt)
+ovirtstat is an [oVirt](https://www.ovirt.org/) input plugin for [Telegraf](https://github.com/influxdata/telegraf) that gathers status and basic stats from oVirt Engine using [go-ovirt](https://github.com/ovirt/go-ovirt).
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/tesibelda/ovirtstat/raw/master/LICENSE)
 [![Go Report Card](https://goreportcard.com/badge/github.com/tesibelda/ovirtstat)](https://goreportcard.com/report/github.com/tesibelda/ovirtstat)
@@ -51,7 +51,7 @@ Latest releases are built with a go-ovirt library version that should work with 
   # collectors_include = []
   # collectors_exclude = []
 
-  #### collector names available are ####
+  #### collector names available are (details in METRICS.md) ####
   ## Datacenters: datacenter stats in ovirtstat_datacenter measurement
   ## Hosts: hypervisor/host stats in ovirtstat_host measurement
   ## StorageDomains: cluster stats in ovirtstat_storagedomains measurement
@@ -61,18 +61,18 @@ Latest releases are built with a go-ovirt library version that should work with 
 * Edit telegraf's execd input configuration as needed. Example:
 
 ```
-## Gather vSphere vCenter status and basic stats
+## Gather oVirt Engine status and basic stats
 [[inputs.execd]]
-  command = ["/path/to/ovirtstat_binary", "-config", "/path/to/ovirtstat.conf"]
+  command = ["/path/to/ovirtstat_binary", "--config", "/path/to/ovirtstat.conf"]
   signal = "none"
 ```
 
-You can optionally tell ovirtstat the input's interval by adding -poll_interval the_interval parameters to the command. By default it expects 1m interval. If you want 30s interval configure it like this:
+You can optionally tell ovirtstat the input's interval by adding --poll_interval <the_interval> parameters to the command. By default it expects 1m interval. If you want 30s interval configure it like this:
 ```
-## Gather vSphere vCenter status and basic stats
+## Gather oVirt Engine status and basic stats
 [[inputs.execd]]
   interval = "30s"
-  command = ["/path/to/ovirtstat_binary", "-config", "/path/to/ovirtstat.conf", "-poll_interval", "30s"]
+  command = ["/path/to/ovirtstat_binary", "--config", "/path/to/ovirtstat.conf", "--poll_interval", "30s"]
   signal = "none"
 ```
 Metric timestamp precision will be set according to the polling interval, so it will usually be 1s.
@@ -88,7 +88,7 @@ Metric timestamp precision will be set according to the polling interval, so it 
 /path/to/ovirtstat --config /path/to/ovirtstat.conf
 ```
 
-* Wait for 1 minute or press enter. You should see lines like those in the Example output below.
+* Wait for the poll_interval or press enter. You should see lines like those in the Example output below.
 
 
 # Example output
@@ -134,4 +134,5 @@ Tesifonte Belda (https://github.com/tesibelda)
 [The MIT License (MIT)](https://github.com/tesibelda/ovirtstat/blob/master/LICENSE)
 
 Used libraries:
+
   go-ovirt [Apache-2.0 license](https://github.com/oVirt/go-ovirt/blob/master/LICENSE.txt)

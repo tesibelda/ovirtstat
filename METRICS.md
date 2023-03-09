@@ -71,7 +71,7 @@
 	- run_once (bool)
 	- stateless (bool)
 	- status (string)
-	- status_code (int) 0-up, 1-paused, 2..8-misc, 10-unknown, 11-unassigned, 12-notresponding, 13-down
+	- status_code (int) 0-up, 1-paused, 2..9-misc, 10-unknown, 11-unassigned, 12-notresponding, 13-down
 - internal_ovirtstat
   - tags:
     - ovirt-engine
