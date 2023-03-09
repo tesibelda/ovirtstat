@@ -14,15 +14,17 @@ import (
 )
 
 type VcCache struct {
-	dcs          *ovirtsdk.DataCenterSlice    //nolint
-	clusters     *ovirtsdk.ClusterSlice       //nolint
-	sds          *ovirtsdk.StorageDomainSlice //nolint
-	hosts        *ovirtsdk.HostSlice          //nolint
-	vms          *ovirtsdk.VmSlice            //nolint
-	lastDCUpdate time.Time                    //nolint
-	lastHoUpdate time.Time                    //nolint
-	lastSdUpdate time.Time                    //nolint
-	lastVmUpdate time.Time                    //nolint
+	dcs          *ovirtsdk.DataCenterSlice
+	clusters     *ovirtsdk.ClusterSlice
+	gvs          *ovirtsdk.GlusterVolumeSlice
+	sds          *ovirtsdk.StorageDomainSlice
+	hosts        *ovirtsdk.HostSlice
+	vms          *ovirtsdk.VmSlice
+	lastDCUpdate time.Time
+	lastHoUpdate time.Time
+	lastGvUpdate time.Time
+	lastSdUpdate time.Time
+	lastVmUpdate time.Time
 }
 
 func (c *OVirtCollector) getDatacentersAndClusters(ctx context.Context) error {
@@ -57,6 +59,34 @@ func (c *OVirtCollector) getDatacentersAndClusters(ctx context.Context) error {
 	c.clusters = clusters
 
 	return err
+}
+
+func (c *OVirtCollector) getAllDatacentersGlusterVolumes(ctx context.Context) error {
+	var err error
+
+	if time.Since(c.lastGvUpdate) < c.dataDuration {
+		return nil
+	}
+
+	if err = c.getDatacentersAndClusters(ctx); err != nil {
+		return err
+	}
+
+	// Get Gluster Volumes
+	clserv := ovirtsdk.NewClusterService(c.conn, "")
+	gvsService := clserv.GlusterVolumesService()
+	gvsResponse, err := gvsService.List().Send()
+	if err != nil {
+		return err
+	}
+	gvs, ok := gvsResponse.Volumes()
+	if !ok {
+		return fmt.Errorf("Could not get gluster volume list or it is empty")
+	}
+	c.gvs = gvs
+	c.lastGvUpdate = time.Now()
+
+	return nil
 }
 
 func (c *OVirtCollector) getAllDatacentersHosts(ctx context.Context) error {

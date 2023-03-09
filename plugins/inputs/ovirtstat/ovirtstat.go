@@ -87,6 +87,7 @@ var sampleConfig = `
 
   #### collector names available are ####
   ## Datacenters: datacenter stats in ovirtstat_datacenter measurement
+  ## GlusterVolumes: gluster volume stats in ovirtstat_glustervolume measurement
   ## Hosts: hypervisor/host stats in ovirtstat_host measurement
   ## StorageDomains: cluster stats in ovirtstat_storagedomains measurement
   ## VMs: virtual machine stats in ovirtstat_vm measurement
@@ -312,6 +313,9 @@ func (ovc *OVirtstatConfig) gatherStorage(
 	if _, exist = ovc.collectors["StorageDomains"]; exist {
 		err = col.CollectDatastoresInfo(ctx, acc)
 	}
+	if _, exist = ovc.collectors["GlusterVolumes"]; exist {
+		err = col.CollectGlusterVolumeInfo(ctx, acc)
+	}
 
 	return err
 }
@@ -334,7 +338,7 @@ func (ovc *OVirtstatConfig) gatherVM(ctx context.Context, acc telegraf.Accumulat
 
 // setFilterCollectors sets collectors to use given the include and exclude filters
 func (ovc *OVirtstatConfig) setFilterCollectors(include, exclude []string) error {
-	var allcollectors = []string{"Datacenters", "Hosts", "StorageDomains", "VMs"}
+	var allcollectors = []string{"Datacenters", "GlusterVolumes", "Hosts", "StorageDomains", "VMs"}
 	var err error
 
 	ovc.filterCollectors, err = filter.NewIncludeExcludeFilter(include, exclude)

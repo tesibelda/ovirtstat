@@ -54,6 +54,22 @@
 	- used (int) in bytes
 	- status (string)
 	- status_code (int) 0-active, 1-activating, 2-maintenance, 3-unknown, 4-detaching, 5-unattached, 6-mixed, 7-locked
+- ovirtstat_glustervolume
+  - tags:
+    - clustername
+    - dcname
+    - name
+	- id
+    - ovirt-engine
+	- type
+  - fields:
+	- briks (int)
+	- disperse_count (int)
+	- redundancy_count (int)
+	- replica_count (int)
+	- status (string)
+	- status_code (int) 0-up, 1-unknown, 2-down
+	- stripe_count (int)
 - ovirtstat_vm
   - tags:
     - clustername
