@@ -21,13 +21,13 @@ func (c *OVirtCollector) CollectDatacenterInfo(
 	acc telegraf.Accumulator,
 ) error {
 	var (
-		status   ovirtsdk.DataCenterStatus
-		dctags   = make(map[string]string)
-		dcfields = make(map[string]interface{})
-		id, name string
-		t        time.Time
-		ok       bool
-		err      error
+		status    ovirtsdk.DataCenterStatus
+		dctags    = make(map[string]string)
+		dcfields  = make(map[string]interface{})
+		id, name  string
+		t         time.Time
+		ok, local bool
+		err       error
 	)
 
 	if c.conn == nil {
@@ -52,12 +52,15 @@ func (c *OVirtCollector) CollectDatacenterInfo(
 			acc.AddError(fmt.Errorf("Cloud not get status for datacenter %s", name))
 			continue
 		}
+		local, _ = dc.Local()
+		// here dc.Networks() and dc.StorageDomains() may return empty slices so not using them
 
 		dctags["name"] = name
 		dctags["id"] = id
 		dctags["ovirt-engine"] = c.url.Host
 
 		dcfields["clusters"] = c.countClustersInDc(id)
+		dcfields["local"] = local
 		dcfields["status"] = string(status)
 		dcfields["status_code"] = datacenterStatusCode(status)
 

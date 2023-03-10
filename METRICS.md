@@ -16,6 +16,7 @@
     - ovirt-engine
   - fields:
     - clusters (int)
+	- local (bool)
 	- status (string)
 	- status_code (int) 0-up, 1-maintenance, 2-uninitialized, 3-problematic, 4-contend, 5-notoperational
 - ovirtstat_host
