@@ -42,14 +42,16 @@
   - tags:
 	- id
     - name
-    - type
     - ovirt-engine
+	- storage_type
+    - type
   - fields:
 	- available (int) in bytes
 	- committed (int) in bytes
 	- connections (int)
 	- external_status (string)
 	- external_status_code (int) 0-ok, 1-info, 2-warning, 3-error, 4-failure
+	- logical_units (int)
 	- master (bool)
 	- used (int) in bytes
 	- status (string)
@@ -58,8 +60,8 @@
   - tags:
     - clustername
     - dcname
-    - name
 	- id
+    - name
     - ovirt-engine
 	- type
   - fields:
@@ -75,8 +77,8 @@
     - clustername
     - dcname
     - hostname
-    - name
 	- id
+    - name
     - ovirt-engine
 	- type
   - fields:

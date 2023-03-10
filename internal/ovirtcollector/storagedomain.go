@@ -23,14 +23,14 @@ func (c *OVirtCollector) CollectDatastoresInfo(
 	var (
 		estatus                    ovirtsdk.ExternalStatus
 		status                     ovirtsdk.StorageDomainStatus
-		sty                        ovirtsdk.StorageDomainType
+		sdty                       ovirtsdk.StorageDomainType
 		conns                      *ovirtsdk.StorageConnectionSlice
 		sdtags                     = make(map[string]string)
 		sdfields                   = make(map[string]interface{})
-		id, name, stype            string
+		id, name, sdtype, stype    string
 		t                          time.Time
 		available, committed, used int64
-		connections                int
+		connections, sdlus         int
 		ok, master                 bool
 		err                        error
 	)
@@ -53,12 +53,13 @@ func (c *OVirtCollector) CollectDatastoresInfo(
 			acc.AddError(fmt.Errorf("Found a storagedomain %s without Name, skipping", id))
 			continue
 		}
-		stype = ""
-		if sty, ok = sd.Type(); ok {
-			stype = string(sty)
+		status, _ = sd.Status() //nolint: external storage may return !ok
+		sdtype = ""
+		if sdty, ok = sd.Type(); ok {
+			sdtype = string(sdty)
 		}
+		stype, sdlus = getSDStorageInfo(sd)
 		used, available, committed = 0, 0, 0
-		status, _ = sd.Status()
 		if status != ovirtsdk.STORAGEDOMAINSTATUS_UNATTACHED {
 			if used, ok = sd.Used(); !ok {
 				acc.AddError(fmt.Errorf("Cloud not get used for storagedomain %s", name))
@@ -84,13 +85,15 @@ func (c *OVirtCollector) CollectDatastoresInfo(
 		sdtags["id"] = id
 		sdtags["name"] = name
 		sdtags["ovirt-engine"] = c.url.Host
-		sdtags["type"] = stype
+		sdtags["storage_type"] = stype
+		sdtags["type"] = sdtype
 
 		sdfields["available"] = available
 		sdfields["committed"] = committed
 		sdfields["connections"] = connections
 		sdfields["external_status"] = string(estatus)
 		sdfields["external_status_code"] = externalStatusCode(estatus)
+		sdfields["logical_units"] = sdlus
 		sdfields["master"] = master
 		sdfields["status"] = string(status)
 		sdfields["status_code"] = storagedomainStatusCode(status)
@@ -100,6 +103,35 @@ func (c *OVirtCollector) CollectDatastoresInfo(
 	}
 
 	return err
+}
+
+// getSDStorageInfo returns storage data from a storagedomain
+func getSDStorageInfo(sd *ovirtsdk.StorageDomain) (string, int) {
+	var (
+		sty   ovirtsdk.StorageType
+		hst   *ovirtsdk.HostStorage
+		lus   *ovirtsdk.LogicalUnitSlice
+		vg    *ovirtsdk.VolumeGroup
+		stype string
+		sdlus int
+		ok    bool
+	)
+
+	if hst, ok = sd.Storage(); ok {
+		if sty, ok = hst.Type(); ok {
+			stype = string(sty)
+		}
+		if lus, ok = hst.LogicalUnits(); ok {
+			sdlus = len(lus.Slice())
+		} else {
+			if vg, ok = hst.VolumeGroup(); ok {
+				if lus, ok = vg.LogicalUnits(); ok {
+					sdlus = len(lus.Slice())
+				}
+			}
+		}
+	}
+	return stype, sdlus
 }
 
 // storagedomainStatusCode converts StorageDomainStatus to int16 for easy alerting
