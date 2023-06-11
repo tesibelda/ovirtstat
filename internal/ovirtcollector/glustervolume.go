@@ -39,39 +39,39 @@ func (c *OVirtCollector) CollectGlusterVolumeInfo(
 	)
 
 	if c.conn == nil {
-		return fmt.Errorf("Could not get gluster volumes info: %w", ErrorNoClient)
+		return fmt.Errorf("could not get gluster volumes info: %w", ErrorNoClient)
 	}
 
 	if err = c.getDatacentersAndClusters(ctx); err != nil {
-		return fmt.Errorf("Could not get all gluster volumes entity lists: %w", err)
+		return fmt.Errorf("could not get all gluster volumes entity lists: %w", err)
 	}
 	t = time.Now()
 
 	for _, cl = range c.clusters.Slice() {
 		if clname, ok = cl.Name(); !ok {
-			acc.AddError(fmt.Errorf("Found a cluster without Name, skipping"))
+			acc.AddError(fmt.Errorf("found a cluster without Name, skipping"))
 			continue
 		}
 		if !c.filterClusters.Match(clname) {
 			continue
 		}
 		if gvs, ok = cl.GlusterVolumes(); !ok {
-			acc.AddError(fmt.Errorf("Cloud not get gluster volumes for cluster %s", clname))
+			acc.AddError(fmt.Errorf("could not get gluster volumes for cluster %s", clname))
 			continue
 		}
 		dcname = c.clusterDatacenterName(cl)
 		for _, gv := range gvs.Slice() {
 			if id, ok = gv.Id(); !ok {
-				acc.AddError(fmt.Errorf("Found a gluster volume without Id, skipping"))
+				acc.AddError(fmt.Errorf("found a gluster volume without Id, skipping"))
 				continue
 			}
 			if name, ok = gv.Name(); !ok {
-				acc.AddError(fmt.Errorf("Found a gluster volume without Name, skipping"))
+				acc.AddError(fmt.Errorf("vound a gluster volume without Name, skipping"))
 				continue
 			}
 			gvtype, _ = gv.VolumeType()
 			if status, ok = gv.Status(); !ok {
-				acc.AddError(fmt.Errorf("Cloud not get status for gluster volume %s", name))
+				acc.AddError(fmt.Errorf("could not get status for gluster volume %s", name))
 				continue
 			}
 			briks = 0

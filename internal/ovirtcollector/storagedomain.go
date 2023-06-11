@@ -36,21 +36,21 @@ func (c *OVirtCollector) CollectDatastoresInfo(
 	)
 
 	if c.conn == nil {
-		return fmt.Errorf("Could not get storagedomains info: %w", ErrorNoClient)
+		return fmt.Errorf("could not get storagedomains info: %w", ErrorNoClient)
 	}
 
 	if err = c.getAllDatacentersStorageDomains(ctx); err != nil {
-		return fmt.Errorf("Could not get all storagedomain entity lists: %w", err)
+		return fmt.Errorf("could not get all storagedomain entity lists: %w", err)
 	}
 	t = time.Now()
 
 	for _, sd := range c.sds.Slice() {
 		if id, ok = sd.Id(); !ok {
-			acc.AddError(fmt.Errorf("Found a storagedomain without Id, skipping"))
+			acc.AddError(fmt.Errorf("found a storagedomain without Id, skipping"))
 			continue
 		}
 		if name, ok = sd.Name(); !ok {
-			acc.AddError(fmt.Errorf("Found a storagedomain %s without Name, skipping", id))
+			acc.AddError(fmt.Errorf("found a storagedomain %s without Name, skipping", id))
 			continue
 		}
 		status, _ = sd.Status() //nolint: external storage may return !ok
@@ -62,11 +62,11 @@ func (c *OVirtCollector) CollectDatastoresInfo(
 		used, available, committed = 0, 0, 0
 		if status != ovirtsdk.STORAGEDOMAINSTATUS_UNATTACHED {
 			if used, ok = sd.Used(); !ok {
-				acc.AddError(fmt.Errorf("Cloud not get used for storagedomain %s", name))
+				acc.AddError(fmt.Errorf("could not get used for storagedomain %s", name))
 				continue
 			}
 			if available, ok = sd.Available(); !ok {
-				acc.AddError(fmt.Errorf("Cloud not get available for storagedomain %s", name))
+				acc.AddError(fmt.Errorf("could not get available for storagedomain %s", name))
 				continue
 			}
 			if committed, ok = sd.Committed(); !ok {

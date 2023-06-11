@@ -32,14 +32,14 @@ func (c *OVirtCollector) CollectApiSummaryInfo(
 	)
 
 	if c.conn == nil {
-		return fmt.Errorf("Could not get oVirt API info: %w", ErrorNoClient)
+		return fmt.Errorf("could not get oVirt API info: %w", ErrorNoClient)
 	}
 
 	if apiSvc, err = c.conn.SystemService().Get().Send(); err != nil {
 		return err
 	}
 	if api, ok = apiSvc.Api(); !ok {
-		return fmt.Errorf("Could not get oVirt API data")
+		return fmt.Errorf("could not get oVirt API data")
 	}
 	t = time.Now()
 

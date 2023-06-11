@@ -39,28 +39,28 @@ func (c *OVirtCollector) CollectVmsInfo(
 	)
 
 	if c.conn == nil {
-		return fmt.Errorf("Could not get VMs info: %w", ErrorNoClient)
+		return fmt.Errorf("could not get VMs info: %w", ErrorNoClient)
 	}
 
 	if err = c.getAllDatacentersVMs(ctx); err != nil {
-		return fmt.Errorf("Could not get all VM entity lists: %w", err)
+		return fmt.Errorf("could not get all VM entity lists: %w", err)
 	}
 	t = time.Now()
 
 	for _, vm := range c.vms.Slice() {
 		if id, ok = vm.Id(); !ok {
-			acc.AddError(fmt.Errorf("Found a VM without Id, skipping"))
+			acc.AddError(fmt.Errorf("found a VM without Id, skipping"))
 			continue
 		}
 		if name, ok = vm.Name(); !ok {
-			acc.AddError(fmt.Errorf("Found a VM without Name, skipping"))
+			acc.AddError(fmt.Errorf("found a VM without Name, skipping"))
 			continue
 		}
 		if !c.filterVms.Match(name) {
 			continue
 		}
 		if status, ok = vm.Status(); !ok {
-			acc.AddError(fmt.Errorf("Cloud not get status for VM %s", name))
+			acc.AddError(fmt.Errorf("could not get status for VM %s", name))
 			continue
 		}
 		if ho, ok = vm.Host(); ok {

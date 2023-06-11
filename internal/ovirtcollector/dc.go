@@ -31,25 +31,25 @@ func (c *OVirtCollector) CollectDatacenterInfo(
 	)
 
 	if c.conn == nil {
-		return fmt.Errorf("Could not get datacenters info: %w", ErrorNoClient)
+		return fmt.Errorf("could not get datacenters info: %w", ErrorNoClient)
 	}
 
 	if err = c.getDatacentersAndClusters(ctx); err != nil {
-		return fmt.Errorf("Could not get all datacenter entity lists: %w", err)
+		return fmt.Errorf("could not get all datacenter entity lists: %w", err)
 	}
 	t = time.Now()
 
 	for _, dc := range c.dcs.Slice() {
 		if id, ok = dc.Id(); !ok {
-			acc.AddError(fmt.Errorf("Found a datacenter without Id, skipping"))
+			acc.AddError(fmt.Errorf("found a datacenter without Id, skipping"))
 			continue
 		}
 		if name, ok = dc.Name(); !ok {
-			acc.AddError(fmt.Errorf("Found a datacenter without Name, skipping"))
+			acc.AddError(fmt.Errorf("found a datacenter without Name, skipping"))
 			continue
 		}
 		if status, ok = dc.Status(); !ok {
-			acc.AddError(fmt.Errorf("Cloud not get status for datacenter %s", name))
+			acc.AddError(fmt.Errorf("could not get status for datacenter %s", name))
 			continue
 		}
 		local, _ = dc.Local()

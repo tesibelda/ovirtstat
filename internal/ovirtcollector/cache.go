@@ -38,7 +38,7 @@ func (c *OVirtCollector) getDatacentersAndClusters(ctx context.Context) error {
 	}
 	datacenters, ok := datacentersResponse.DataCenters()
 	if !ok {
-		return fmt.Errorf("Could not get datacenter list or it is empty")
+		return fmt.Errorf("could not get datacenter list or it is empty")
 	}
 	c.dcs = datacenters
 	c.lastDCUpdate = time.Now()
@@ -52,7 +52,7 @@ func (c *OVirtCollector) getDatacentersAndClusters(ctx context.Context) error {
 	}
 	clusters, ok := clustersResponse.Clusters()
 	if !ok {
-		return fmt.Errorf("Could not get cluster list or it is empty")
+		return fmt.Errorf("could not get cluster list or it is empty")
 	}
 	c.clusters = clusters
 
@@ -77,7 +77,7 @@ func (c *OVirtCollector) getAllDatacentersHosts(ctx context.Context) error {
 	}
 	hosts, ok := hostsResponse.Hosts()
 	if !ok {
-		return fmt.Errorf("Could not get hosts list or it is empty")
+		return fmt.Errorf("could not get hosts list or it is empty")
 	}
 	c.hosts = hosts
 	c.lastHoUpdate = time.Now()
@@ -103,7 +103,7 @@ func (c *OVirtCollector) getAllDatacentersStorageDomains(ctx context.Context) er
 	}
 	sds, ok := sdsResponse.StorageDomains()
 	if !ok {
-		return fmt.Errorf("Could not get storagedomain list or it is empty")
+		return fmt.Errorf("could not get storagedomain list or it is empty")
 	}
 	c.sds = sds
 	c.lastSdUpdate = time.Now()
@@ -129,7 +129,7 @@ func (c *OVirtCollector) getAllDatacentersVMs(ctx context.Context) error {
 	}
 	vms, ok := vmsResponse.Vms()
 	if !ok {
-		return fmt.Errorf("Could not get VM list or it is empty")
+		return fmt.Errorf("could not get VM list or it is empty")
 	}
 	c.vms = vms
 	c.lastVmUpdate = time.Now()

@@ -41,28 +41,28 @@ func (c *OVirtCollector) CollectHostInfo(
 	)
 
 	if c.conn == nil {
-		return fmt.Errorf("Could not get hosts info: %w", ErrorNoClient)
+		return fmt.Errorf("could not get hosts info: %w", ErrorNoClient)
 	}
 
 	if err = c.getAllDatacentersHosts(ctx); err != nil {
-		return fmt.Errorf("Could not get all hosts entity lists: %w", err)
+		return fmt.Errorf("could not get all hosts entity lists: %w", err)
 	}
 	t = time.Now()
 
 	for _, host := range c.hosts.Slice() {
 		if id, ok = host.Id(); !ok {
-			acc.AddError(fmt.Errorf("Found a host without Id, skipping"))
+			acc.AddError(fmt.Errorf("found a host without Id, skipping"))
 			continue
 		}
 		if name, ok = host.Name(); !ok {
-			acc.AddError(fmt.Errorf("Found a host without Name, skipping"))
+			acc.AddError(fmt.Errorf("found a host without Name, skipping"))
 			continue
 		}
 		if !c.filterHosts.Match(name) {
 			continue
 		}
 		if status, ok = host.Status(); !ok {
-			acc.AddError(fmt.Errorf("Cloud not get status for host %s", name))
+			acc.AddError(fmt.Errorf("could not get status for host %s", name))
 			continue
 		}
 		htype, _ = host.Type()

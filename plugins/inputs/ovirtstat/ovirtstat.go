@@ -130,25 +130,25 @@ func (ovc *OVirtstatConfig) Init() error {
 	ovc.ovc.SetMaxResponseTime(time.Duration(ovc.pollInterval))
 	err = ovc.ovc.SetFilterClusters(ovc.ClustersInclude, ovc.ClustersExclude)
 	if err != nil {
-		return fmt.Errorf("Error parsing clusters filters: %w", err)
+		return fmt.Errorf("error parsing clusters filters: %w", err)
 	}
 	err = ovc.ovc.SetFilterHosts(ovc.HostsInclude, ovc.HostsExclude)
 	if err != nil {
-		return fmt.Errorf("Error parsing hosts filters: %w", err)
+		return fmt.Errorf("error parsing hosts filters: %w", err)
 	}
 	err = ovc.ovc.SetFilterVms(ovc.VmsInclude, ovc.VmsExclude)
 	if err != nil {
-		return fmt.Errorf("Error parsing VMs filters: %w", err)
+		return fmt.Errorf("error parsing VMs filters: %w", err)
 	}
 	err = ovc.setFilterCollectors(ovc.CollectorsInclude, ovc.CollectorsExclude)
 	if err != nil {
-		return fmt.Errorf("Error parsing collectors filters: %w", err)
+		return fmt.Errorf("error parsing collectors filters: %w", err)
 	}
 
 	// selfmonitoring
 	u, err := url.Parse(ovc.OVirtUrl)
 	if err != nil {
-		return fmt.Errorf("Error parsing URL for ovurl: %w", err)
+		return fmt.Errorf("error parsing URL for ovurl: %w", err)
 	}
 	tags := map[string]string{
 		"alias":        ovc.InternalAlias,
@@ -242,7 +242,7 @@ func (ovc *OVirtstatConfig) keepActiveSession(acc telegraf.Accumulator) error {
 	}
 	if !col.IsActive(ovc.ctx) {
 		if ovc.SessionsCreated.Get() > 0 {
-			acc.AddError(fmt.Errorf("OVirt session not active, re-authenticating..."))
+			acc.AddError(fmt.Errorf("OVirt session not active, re-authenticating"))
 		}
 		if err = col.Open(ovc.ctx, 12*time.Hour); err != nil {
 			return err
