@@ -15,8 +15,8 @@ import (
 	ovirtsdk "github.com/ovirt/go-ovirt"
 )
 
-// CollectApiSummaryInfo gathers oVirt api's summary info
-func (c *OVirtCollector) CollectApiSummaryInfo(
+// CollectAPISummaryInfo gathers oVirt api's summary info
+func (c *OVirtCollector) CollectAPISummaryInfo(
 	ctx context.Context,
 	acc telegraf.Accumulator,
 ) error {

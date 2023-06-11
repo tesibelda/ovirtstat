@@ -14,8 +14,8 @@ import (
 var ErrorURLParsing = errors.New("error parsing URL")
 
 // PaseURL parses an URL params
-func PaseURL(anUrl, user, pass string) (*url.URL, error) {
-	u, err := url.Parse(anUrl)
+func PaseURL(anURL, user, pass string) (*url.URL, error) {
+	u, err := url.Parse(anURL)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", ErrorURLParsing.Error(), err)
 	}

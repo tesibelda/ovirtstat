@@ -22,9 +22,9 @@ import (
 	"github.com/tesibelda/vcstat/pkg/tgplus"
 )
 
-type OVirtstatConfig struct {
+type Config struct {
 	tls.ClientConfig
-	OVirtUrl      string          `toml:"ovirturl"`
+	OVirtURL      string          `toml:"ovirturl"`
 	Username      string          `toml:"username"`
 	Password      string          `toml:"password"`
 	InternalAlias string          `toml:"internal_alias"`
@@ -95,8 +95,8 @@ var sampleConfig = `
 
 func init() {
 	inputs.Add("ovirtstat", func() telegraf.Input {
-		return &OVirtstatConfig{
-			OVirtUrl:      "https://ovirt-engine.local/ovirt-engine/api",
+		return &Config{
+			OVirtURL:      "https://ovirt-engine.local/ovirt-engine/api",
 			Username:      "user@internal",
 			Password:      "secret",
 			InternalAlias: "",
@@ -106,7 +106,7 @@ func init() {
 }
 
 // Init initializes internal ovirtstat variables with the provided configuration
-func (ovc *OVirtstatConfig) Init() error {
+func (ovc *Config) Init() error {
 	var err error
 
 	ovc.ctx, ovc.cancel = context.WithCancel(context.Background())
@@ -115,7 +115,7 @@ func (ovc *OVirtstatConfig) Init() error {
 	}
 	ovc.ovc, err = ovirtcollector.New(
 		ovc.ctx,
-		ovc.OVirtUrl,
+		ovc.OVirtURL,
 		ovc.Username,
 		ovc.Password,
 		&ovc.ClientConfig,
@@ -127,7 +127,7 @@ func (ovc *OVirtstatConfig) Init() error {
 
 	/// Set ovirtcollector options
 	ovc.ovc.SetDataDuration(time.Duration(ovc.pollInterval.Seconds() * 0.9))
-	ovc.ovc.SetMaxResponseTime(time.Duration(ovc.pollInterval))
+	ovc.ovc.SetMaxResponseTime(ovc.pollInterval)
 	err = ovc.ovc.SetFilterClusters(ovc.ClustersInclude, ovc.ClustersExclude)
 	if err != nil {
 		return fmt.Errorf("error parsing clusters filters: %w", err)
@@ -146,7 +146,7 @@ func (ovc *OVirtstatConfig) Init() error {
 	}
 
 	// selfmonitoring
-	u, err := url.Parse(ovc.OVirtUrl)
+	u, err := url.Parse(ovc.OVirtURL)
 	if err != nil {
 		return fmt.Errorf("error parsing URL for ovurl: %w", err)
 	}
@@ -162,7 +162,7 @@ func (ovc *OVirtstatConfig) Init() error {
 
 // Stop is called from telegraf core when a plugin is stopped and allows it to
 // perform shutdown tasks.
-func (ovc *OVirtstatConfig) Stop() {
+func (ovc *Config) Stop() {
 	if ovc.ovc != nil {
 		ovc.ovc.Close(ovc.ctx)
 	}
@@ -170,25 +170,25 @@ func (ovc *OVirtstatConfig) Stop() {
 }
 
 // SetPollInterval allows telegraf shim to tell ovirtstat the configured polling interval
-func (ovc *OVirtstatConfig) SetPollInterval(pollInterval time.Duration) error {
+func (ovc *Config) SetPollInterval(pollInterval time.Duration) error {
 	ovc.pollInterval = pollInterval
 	return nil
 }
 
 // SampleConfig returns a set of default configuration to be used as a boilerplate when setting up
 // Telegraf.
-func (ovc *OVirtstatConfig) SampleConfig() string {
+func (ovc *Config) SampleConfig() string {
 	return sampleConfig
 }
 
 // Description returns a short textual description of the plugin
-func (ovc *OVirtstatConfig) Description() string {
+func (ovc *Config) Description() string {
 	return "Gathers status and basic stats from OVirt Engine"
 }
 
 // Gather is the main data collection function called by the Telegraf core. It performs all
 // the data collection and writes all metrics into the Accumulator passed as an argument.
-func (ovc *OVirtstatConfig) Gather(acc telegraf.Accumulator) error {
+func (ovc *Config) Gather(acc telegraf.Accumulator) error {
 	var startTime time.Time
 	var err error
 
@@ -198,7 +198,7 @@ func (ovc *OVirtstatConfig) Gather(acc telegraf.Accumulator) error {
 	acc.SetPrecision(tgplus.GetPrecision(ovc.pollInterval))
 
 	// poll using a context with timeout
-	ctxT, cancelT := context.WithTimeout(ovc.ctx, time.Duration(ovc.pollInterval))
+	ctxT, cancelT := context.WithTimeout(ovc.ctx, ovc.pollInterval)
 	defer cancelT()
 	startTime = time.Now()
 
@@ -219,7 +219,7 @@ func (ovc *OVirtstatConfig) Gather(acc telegraf.Accumulator) error {
 	}
 
 	// selfmonitoring
-	ovc.GatherTime.Set(int64(time.Since(startTime).Nanoseconds()))
+	ovc.GatherTime.Set(time.Since(startTime).Nanoseconds())
 	for _, m := range selfstat.Metrics() {
 		if m.Name() != "internal_agent" {
 			acc.AddMetric(m)
@@ -230,7 +230,7 @@ func (ovc *OVirtstatConfig) Gather(acc telegraf.Accumulator) error {
 }
 
 // keepActiveSession keeps an active session with vsphere
-func (ovc *OVirtstatConfig) keepActiveSession(acc telegraf.Accumulator) error {
+func (ovc *Config) keepActiveSession(acc telegraf.Accumulator) error {
 	var col *ovirtcollector.OVirtCollector
 	var err error
 
@@ -254,7 +254,7 @@ func (ovc *OVirtstatConfig) keepActiveSession(acc telegraf.Accumulator) error {
 }
 
 // gatherHighLevelEntities gathers datacenters and clusters stats
-func (ovc *OVirtstatConfig) gatherHighLevelEntities(
+func (ovc *Config) gatherHighLevelEntities(
 	ctx context.Context,
 	acc telegraf.Accumulator,
 ) error {
@@ -267,7 +267,7 @@ func (ovc *OVirtstatConfig) gatherHighLevelEntities(
 	}
 
 	//--- Get OVirt api summary stats
-	if err = col.CollectApiSummaryInfo(ctx, acc); err != nil {
+	if err = col.CollectAPISummaryInfo(ctx, acc); err != nil {
 		return err
 	}
 
@@ -280,7 +280,7 @@ func (ovc *OVirtstatConfig) gatherHighLevelEntities(
 }
 
 // gatherHost gathers info and stats per host
-func (ovc *OVirtstatConfig) gatherHost(
+func (ovc *Config) gatherHost(
 	ctx context.Context,
 	acc telegraf.Accumulator,
 ) error {
@@ -299,7 +299,7 @@ func (ovc *OVirtstatConfig) gatherHost(
 }
 
 // gatherStorage gathers storage entities info
-func (ovc *OVirtstatConfig) gatherStorage(
+func (ovc *Config) gatherStorage(
 	ctx context.Context,
 	acc telegraf.Accumulator,
 ) error {
@@ -321,7 +321,7 @@ func (ovc *OVirtstatConfig) gatherStorage(
 }
 
 // gatherVM gathers virtual machine's info
-func (ovc *OVirtstatConfig) gatherVM(ctx context.Context, acc telegraf.Accumulator) error {
+func (ovc *Config) gatherVM(ctx context.Context, acc telegraf.Accumulator) error {
 	var col *ovirtcollector.OVirtCollector
 	var err error
 	var exist bool
@@ -337,7 +337,7 @@ func (ovc *OVirtstatConfig) gatherVM(ctx context.Context, acc telegraf.Accumulat
 }
 
 // setFilterCollectors sets collectors to use given the include and exclude filters
-func (ovc *OVirtstatConfig) setFilterCollectors(include, exclude []string) error {
+func (ovc *Config) setFilterCollectors(include, exclude []string) error {
 	var allcollectors = []string{"Datacenters", "GlusterVolumes", "Hosts", "StorageDomains", "VMs"}
 	var err error
 

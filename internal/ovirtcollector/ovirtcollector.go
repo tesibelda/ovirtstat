@@ -47,14 +47,14 @@ type OVirtCollector struct {
 // New returns a new OVirtCollector associated with the provided OVirt URL
 func New(
 	ctx context.Context,
-	ovirtUrl, user, pass string,
+	ovirtURL, user, pass string,
 	clicfg *tls.ClientConfig,
 	dataDuration time.Duration,
 ) (*OVirtCollector, error) {
 	var err error
 
 	ovc := OVirtCollector{
-		urlString:    ovirtUrl,
+		urlString:    ovirtURL,
 		user:         user,
 		pass:         pass,
 		conn:         nil,
@@ -72,7 +72,7 @@ func New(
 	ovc.TLSCA = clicfg.TLSCA
 	ovc.InsecureSkipVerify = clicfg.InsecureSkipVerify
 
-	ovc.url, err = netplus.PaseURL(ovirtUrl, user, pass)
+	ovc.url, err = netplus.PaseURL(ovirtURL, user, pass)
 	if err != nil {
 		return nil, err
 	}

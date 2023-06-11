@@ -22,7 +22,7 @@ type VcCache struct {
 	lastDCUpdate time.Time
 	lastHoUpdate time.Time
 	lastSdUpdate time.Time
-	lastVmUpdate time.Time
+	lastVMUpdate time.Time
 }
 
 func (c *OVirtCollector) getDatacentersAndClusters(ctx context.Context) error {
@@ -114,7 +114,7 @@ func (c *OVirtCollector) getAllDatacentersStorageDomains(ctx context.Context) er
 func (c *OVirtCollector) getAllDatacentersVMs(ctx context.Context) error {
 	var err error
 
-	if time.Since(c.lastVmUpdate) < c.dataDuration {
+	if time.Since(c.lastVMUpdate) < c.dataDuration {
 		return nil
 	}
 	if err = c.getAllDatacentersHosts(ctx); err != nil {
@@ -132,13 +132,13 @@ func (c *OVirtCollector) getAllDatacentersVMs(ctx context.Context) error {
 		return fmt.Errorf("could not get VM list or it is empty")
 	}
 	c.vms = vms
-	c.lastVmUpdate = time.Now()
+	c.lastVMUpdate = time.Now()
 
 	return nil
 }
 
-// datacenterNameFromId returns the datacenter name given its Id
-func (c *OVirtCollector) datacenterNameFromId(id string) string {
+// datacenterNameFromID returns the datacenter name given its Id
+func (c *OVirtCollector) datacenterNameFromID(id string) string {
 	var clid, name string
 	var ok bool
 
@@ -158,7 +158,7 @@ func (c *OVirtCollector) countClustersInDc(id string) int16 {
 	var (
 		edc       *ovirtsdk.DataCenter
 		dcid      string
-		nclusters int16 = 0
+		nclusters int16
 		ok        bool
 	)
 
@@ -207,7 +207,7 @@ func (c *OVirtCollector) clusterDatacenterName(cl *ovirtsdk.Cluster) string {
 			if clid == id {
 				if dc, ok = cl.DataCenter(); ok {
 					if dcid, ok = dc.Id(); ok {
-						name = c.datacenterNameFromId(dcid)
+						name = c.datacenterNameFromID(dcid)
 						break
 					}
 				}

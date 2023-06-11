@@ -17,19 +17,21 @@ import (
 	"github.com/tesibelda/ovirtstat/plugins/inputs/ovirtstat"
 )
 
-var pollInterval = flag.Duration(
-	"poll_interval",
-	60*time.Second,
-	"how often to send metrics (default 1m)",
-)
-var configFile = flag.String("config", "", "path to the config file for this plugin")
-var showVersion = flag.Bool("version", false, "show ovirtstat version and exit")
-
 // Version cotains the actual version of ovirtstat
-var Version string = ""
-var err error
+var Version string
 
 func main() {
+	var (
+		pollInterval = flag.Duration(
+			"poll_interval",
+			60*time.Second,
+			"how often to send metrics (default 1m)",
+		)
+		configFile  = flag.String("config", "", "path to the config file for this plugin")
+		showVersion = flag.Bool("version", false, "show ovirtstat version and exit")
+		err         error
+	)
+
 	// parse command line options
 	flag.Parse()
 	if *showVersion {
@@ -54,9 +56,9 @@ func main() {
 	}
 
 	// Tell ovirtstat shim the configured polling interval
-	vcCfg, ok := shim.Input.(*ovirtstat.OVirtstatConfig)
+	vcCfg, ok := shim.Input.(*ovirtstat.Config)
 	if !ok {
-		fmt.Fprintf(os.Stderr, "Error getting shim input as OVirtstatConfig\n")
+		fmt.Fprintf(os.Stderr, "Error getting shim input as ovirtstat Config\n")
 		os.Exit(1)
 	}
 	if err = vcCfg.SetPollInterval(*pollInterval); err != nil {
