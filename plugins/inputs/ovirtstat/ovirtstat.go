@@ -238,15 +238,20 @@ func (ovc *Config) keepActiveSession(
 	col = ovc.ovc
 	if ctx.Err() != nil || col == nil {
 		if err = ovc.Init(); err != nil {
-			return err
+			return fmt.Errorf("failed to initialize collector for %s: %w", ovc.OVirtURL, err)
 		}
 	}
 	if !col.IsActive(ctx) {
 		if ovc.SessionsCreated.Get() > 0 {
-			acc.AddError(fmt.Errorf("OVirt session not active, re-authenticating"))
+			acc.AddError(
+				fmt.Errorf(
+					"OVirt session not active, re-authenticating with %s",
+					ovc.OVirtURL,
+				),
+			)
 		}
-		if err = col.Open(ctx, ovc.pollInterval / 4); err != nil {
-			return err
+		if err = col.Open(ctx, ovc.pollInterval/4); err != nil {
+			return fmt.Errorf("failed to open connection with %s: %w", ovc.OVirtURL, err)
 		}
 		ovc.SessionsCreated.Incr(1)
 	}
@@ -269,7 +274,7 @@ func (ovc *Config) gatherHighLevelEntities(
 
 	//--- Get OVirt api summary stats
 	if err = col.CollectAPISummaryInfo(ctx, acc); err != nil {
-		return err
+		return fmt.Errorf("failed to get API summary for %s: %w", ovc.OVirtURL, err)
 	}
 
 	//--- Get Datacenters info
