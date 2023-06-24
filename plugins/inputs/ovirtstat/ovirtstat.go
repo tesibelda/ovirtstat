@@ -27,6 +27,7 @@ type Config struct {
 	OVirtURL      string          `toml:"ovirturl"`
 	Username      string          `toml:"username"`
 	Password      string          `toml:"password"`
+	Timeout       time.Duration   `toml:"timeout"`
 	InternalAlias string          `toml:"internal_alias"`
 	Log           telegraf.Logger `toml:"-"`
 
@@ -55,6 +56,7 @@ var sampleConfig = `
   ovirturl = "https://ovirt-engine.local/ovirt-engine/api"
   username = "user@internal"
   password = "secret"
+  timeout = "10s"
 
   ## Optional SSL Config
   # tls_ca = "/path/to/cafile"
@@ -99,6 +101,7 @@ func init() {
 			Username:      "user@internal",
 			Password:      "secret",
 			InternalAlias: "",
+			Timeout:       10 * time.Second,
 			pollInterval:  time.Second * 60,
 		}
 	})
@@ -250,7 +253,7 @@ func (ovc *Config) keepActiveSession(
 				),
 			)
 		}
-		if err = col.Open(ctx, ovc.pollInterval/4); err != nil {
+		if err = col.Open(ctx, ovc.Timeout); err != nil {
 			return fmt.Errorf("failed to open connection with %s: %w", ovc.OVirtURL, err)
 		}
 		ovc.SessionsCreated.Incr(1)
@@ -274,7 +277,7 @@ func (ovc *Config) gatherHighLevelEntities(
 
 	//--- Get OVirt api summary stats
 	if err = col.CollectAPISummaryInfo(ctx, acc); err != nil {
-		return fmt.Errorf("failed to get API summary for %s: %w", ovc.OVirtURL, err)
+		return fmt.Errorf("could not to get API summary for %s: %w", ovc.OVirtURL, err)
 	}
 
 	//--- Get Datacenters info

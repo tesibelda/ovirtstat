@@ -22,6 +22,7 @@ Latest releases are built with a go-ovirt library version that should work with 
   ovirturl = "https://ovirt-engine.local/ovirt-engine/api"
   username = "user@internal"
   password = "secret"
+  timeout = "10s"
 
   ## Optional SSL Config
   # tls_ca = "/path/to/cafile"
