@@ -8,6 +8,7 @@ package ovirtstat
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/url"
 	"time"
@@ -19,7 +20,6 @@ import (
 	"github.com/influxdata/telegraf/selfstat"
 
 	"github.com/tesibelda/ovirtstat/internal/ovirtcollector"
-	"github.com/tesibelda/vcstat/pkg/tgplus"
 )
 
 type Config struct {
@@ -43,7 +43,6 @@ type Config struct {
 	filterCollectors  filter.Filter
 
 	pollInterval time.Duration
-	ctx          context.Context
 	cancel       context.CancelFunc
 	ovc          *ovirtcollector.OVirtCollector
 
@@ -109,12 +108,10 @@ func init() {
 func (ovc *Config) Init() error {
 	var err error
 
-	ovc.ctx, ovc.cancel = context.WithCancel(context.Background())
 	if ovc.ovc != nil {
-		ovc.ovc.Close(ovc.ctx)
+		ovc.ovc.Close()
 	}
 	ovc.ovc, err = ovirtcollector.New(
-		ovc.ctx,
 		ovc.OVirtURL,
 		ovc.Username,
 		ovc.Password,
@@ -164,7 +161,8 @@ func (ovc *Config) Init() error {
 // perform shutdown tasks.
 func (ovc *Config) Stop() {
 	if ovc.ovc != nil {
-		ovc.ovc.Close(ovc.ctx)
+		ovc.ovc.Close()
+		ovc.ovc = nil
 	}
 	ovc.cancel()
 }
@@ -192,30 +190,30 @@ func (ovc *Config) Gather(acc telegraf.Accumulator) error {
 	var startTime time.Time
 	var err error
 
-	if err = ovc.keepActiveSession(acc); err != nil {
-		return tgplus.GatherError(acc, err)
-	}
-	acc.SetPrecision(tgplus.GetPrecision(ovc.pollInterval))
-
 	// poll using a context with timeout
-	ctxT, cancelT := context.WithTimeout(ovc.ctx, ovc.pollInterval)
-	defer cancelT()
+	ctx, cancel := context.WithTimeout(context.Background(), ovc.pollInterval)
+	defer cancel()
+
 	startTime = time.Now()
+	if err = ovc.keepActiveSession(ctx, acc); err != nil {
+		return gatherError(ctx, err)
+	}
+	acc.SetPrecision(intervalPrecision(ovc.pollInterval))
 
 	//--- Get OVirt, DCs and Clusters info
-	if err = ovc.gatherHighLevelEntities(ctxT, acc); err != nil {
-		return tgplus.GatherError(acc, err)
+	if err = ovc.gatherHighLevelEntities(ctx, acc); err != nil {
+		return gatherError(ctx, err)
 	}
 
 	//--- Get Hosts, Storage and VM info
-	if err = ovc.gatherHost(ctxT, acc); err != nil {
-		return tgplus.GatherError(acc, err)
+	if err = ovc.gatherHost(ctx, acc); err != nil {
+		return gatherError(ctx, err)
 	}
-	if err = ovc.gatherStorage(ctxT, acc); err != nil {
-		return tgplus.GatherError(acc, err)
+	if err = ovc.gatherStorage(ctx, acc); err != nil {
+		return gatherError(ctx, err)
 	}
-	if err = ovc.gatherVM(ctxT, acc); err != nil {
-		return tgplus.GatherError(acc, err)
+	if err = ovc.gatherVM(ctx, acc); err != nil {
+		return gatherError(ctx, err)
 	}
 
 	// selfmonitoring
@@ -230,21 +228,24 @@ func (ovc *Config) Gather(acc telegraf.Accumulator) error {
 }
 
 // keepActiveSession keeps an active session with vsphere
-func (ovc *Config) keepActiveSession(acc telegraf.Accumulator) error {
+func (ovc *Config) keepActiveSession(
+	ctx context.Context,
+	acc telegraf.Accumulator,
+) error {
 	var col *ovirtcollector.OVirtCollector
 	var err error
 
 	col = ovc.ovc
-	if ovc.ctx == nil || ovc.ctx.Err() != nil || col == nil {
+	if ctx.Err() != nil || col == nil {
 		if err = ovc.Init(); err != nil {
 			return err
 		}
 	}
-	if !col.IsActive(ovc.ctx) {
+	if !col.IsActive(ctx) {
 		if ovc.SessionsCreated.Get() > 0 {
 			acc.AddError(fmt.Errorf("OVirt session not active, re-authenticating"))
 		}
-		if err = col.Open(ovc.ctx, 12*time.Hour); err != nil {
+		if err = col.Open(ctx, ovc.pollInterval / 4); err != nil {
 			return err
 		}
 		ovc.SessionsCreated.Incr(1)
@@ -355,4 +356,27 @@ func (ovc *Config) setFilterCollectors(include, exclude []string) error {
 	}
 
 	return nil
+}
+
+// gatherError adds the error to the metric accumulator
+func gatherError(ctx context.Context, err error) error {
+	// No need to signal errors if we were merely canceled.
+	if errors.Is(err, context.Canceled) || errors.Is(ctx.Err(), context.Canceled) {
+		return nil
+	}
+	return err
+}
+
+// intervalPrecision returns the rounding precision for metrics
+func intervalPrecision(interval time.Duration) time.Duration {
+	switch {
+	case interval >= time.Second:
+		return time.Second
+	case interval >= time.Millisecond:
+		return time.Millisecond
+	case interval >= time.Microsecond:
+		return time.Microsecond
+	default:
+		return time.Nanosecond
+	}
 }

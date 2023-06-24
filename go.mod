@@ -5,7 +5,6 @@ go 1.19
 require (
 	github.com/influxdata/telegraf v1.26.3
 	github.com/ovirt/go-ovirt v0.0.0-20220427092237-114c47f2835c
-	github.com/tesibelda/vcstat v0.1.11
 )
 
 require (

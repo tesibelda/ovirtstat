@@ -46,7 +46,6 @@ type OVirtCollector struct {
 
 // New returns a new OVirtCollector associated with the provided OVirt URL
 func New(
-	ctx context.Context,
 	ovirtURL, user, pass string,
 	clicfg *tls.ClientConfig,
 	dataDuration time.Duration,
@@ -148,7 +147,7 @@ func (c *OVirtCollector) IsActive(ctx context.Context) bool {
 }
 
 // Close closes OVirt connection
-func (c *OVirtCollector) Close(ctx context.Context) {
+func (c *OVirtCollector) Close() {
 	if c.conn != nil {
 		c.conn.Close()
 	}

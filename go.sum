@@ -365,8 +365,6 @@ github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXf
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
 github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81PSLYec5m4=
 github.com/stretchr/testify v1.8.2 h1:+h33VjcLVPDHtOdpUCuF+7gSuG3yGIftsP1YvFihtJ8=
-github.com/tesibelda/vcstat v0.1.11 h1:ePDeRkLzQ9qAzkn+J5vBsw4CUg/I2vLZnBmcpj0hZKA=
-github.com/tesibelda/vcstat v0.1.11/go.mod h1:moD7RgZ0rnYfr33kEEb/mLQ24Ziu46stHFlq+zjymGk=
 github.com/testcontainers/testcontainers-go v0.18.0 h1:8RXrcIQv5xX/uBOSmZd297gzvA7F0yuRA37/918o7Yg=
 github.com/thomasklein94/packer-plugin-libvirt v0.3.4 h1:K+NkHFcZuiUTp4ZiDdBhWRMZiSMdsXwGuzyg4THKDAU=
 github.com/tidwall/gjson v1.14.4 h1:uo0p8EbA09J7RQaflQ1aBRffTR7xedD2bcIVSYxLnkM=
@@ -382,7 +380,7 @@ github.com/vapourismo/knx-go v0.0.0-20220829185957-fb5458a5389d h1:BJMc7MNW/p80c
 github.com/vishvananda/netlink v1.2.1-beta.2 h1:Llsql0lnQEbHj0I1OuKyp8otXp0r3q0mPkuhwHfStVs=
 github.com/vishvananda/netns v0.0.4 h1:Oeaw1EM2JMxD51g9uhtC0D7erkIjgmj8+JZc26m1YX8=
 github.com/vjeantet/grok v1.0.1 h1:2rhIR7J4gThTgcZ1m2JY4TrJZNgjn985U28kT2wQrJ4=
-github.com/vmware/govmomi v0.30.4 h1:BCKLoTmiBYRuplv3GxKEMBLtBaJm8PA56vo9bddIpYQ=
+github.com/vmware/govmomi v0.28.1-0.20220921224932-b4b508abf208 h1:IDVzGQ2aczmTEfTos4hzmFw20tGQ4zZsVnel9C6VEpA=
 github.com/wavefronthq/wavefront-sdk-go v0.13.0 h1:3s9maJmzI4orW+hiVBfCNp/SIu8ISXi6rtewmDGzheE=
 github.com/wvanbergen/kafka v0.0.0-20171203153745-e2edea948ddf h1:TOV5PC6fIWwFOFra9xJfRXZcL2pLhMI8oNuDugNxg9Q=
 github.com/wvanbergen/kazoo-go v0.0.0-20180202103751-f72d8611297a h1:ILoU84rj4AQ3q6cjQvtb9jBjx4xzR/Riq/zYhmDQiOk=
@@ -506,7 +504,6 @@ honnef.co/go/tools v0.2.2 h1:MNh1AVMyVX23VUHE2O27jm6lNj3vjO5DexS4A1xvnzk=
 k8s.io/api v0.26.2 h1:dM3cinp3PGB6asOySalOZxEG4CZ0IAdJsrYZXE/ovGQ=
 k8s.io/apimachinery v0.26.2 h1:da1u3D5wfR5u2RpLhE/ZtZS2P7QvDgLZTi9wrNZl/tQ=
 k8s.io/client-go v0.26.2 h1:s1WkVujHX3kTp4Zn4yGNFK+dlDXy1bAAkIl+cFAiuYI=
-k8s.io/klog v1.0.0 h1:Pt+yjF5aB1xDSVbau4VsWe+dQNzA0qv1LlXdC2dF6Q8=
 k8s.io/klog/v2 v2.90.1 h1:m4bYOKall2MmOiRaR1J+We67Do7vm9KiQVlT96lnHUw=
 k8s.io/kube-openapi v0.0.0-20230303024457-afdc3dddf62d h1:VcFq5n7wCJB2FQMCIHfC+f+jNcGgNMar1uKd6rVlifU=
 k8s.io/utils v0.0.0-20230308161112-d77c459e9343 h1:m7tbIjXGcGIAtpmQr7/NAi7RsWoW3E7Zcm4jI1HicTc=
