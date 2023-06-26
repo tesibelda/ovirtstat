@@ -41,6 +41,7 @@ func main() {
 		os.Exit(0)
 	}
 	oV := ovirtstat.New()
+	oV.SetVersion(Version)
 
 	// load config an wait for stdin signal from telegraf to gather data
 	if *configFile != "" {

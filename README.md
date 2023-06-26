@@ -102,7 +102,7 @@ ovirtstat_storagedomain,id=072cba31-08f3-4a40-9f24-a5ca22ed1d74,name=ovirt-image
 ovirtstat_storagedomain,id=ec413fb2-c6ce-4bea-a790-2533b728ac93,name=mysd01,ovirt-engine=myovirt,storage_type=fcp,type=data available=3233036632064i,connections=7,committed=16603269824512i,external_status="ok",external_status_code=0,logical_units=1i,master=true,status="",status_code=3i,used=7761005903872i 1677832224000000000
 ovirtstat_glustervolume,clustername=mycluster,dcname=mydc,id=a1d52f5d-6vc3-42a8-a52f-21fe7dde25c2,name=mygv1,ovirt-engine=myovirt,type=stripe briks=1i,disperse_count=0i,redundancy_count=0i,replica_count=0i,status="up",status_code=0i,stripe_count=1i 1677832224000000000
 virtstat_vm,clustername=mycluster,dcname=mydc,hostname=myhyp01,id=125555e7-fa2c-4d95-a5c4-51f1b9a7f563,name=myvm01,ovirt-engine=myovirt,type=server cpu_cores=1i,cpu_threads=2i,run_once=false,status="up",cpu_sockets=2i,memory_size=40802189312i,stateless=false,status_code=0i 1677832224000000000
-internal_ovirtstat,ovirt-engine=myovirt sessions_created=1i,gather_time_ns=803780400i 1677832224000000000
+internal_ovirtstat,ovirt-engine=myovirt,ovirtstat_version=0.1.0 sessions_created=1i,gather_time_ns=803780400i 1677832224000000000
 ```
 
 # Metrics

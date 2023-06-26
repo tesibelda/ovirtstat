@@ -93,7 +93,9 @@
 	- status_code (int) 0-up, 1-paused, 2..9-misc, 10-unknown, 11-unassigned, 12-notresponding, 13-down
 - internal_ovirtstat
   - tags:
+    - alias
     - ovirt-engine
+    - ovirtstat_version
   - fields:
     - sessions_created (int)
     - gather_time_ns (int)

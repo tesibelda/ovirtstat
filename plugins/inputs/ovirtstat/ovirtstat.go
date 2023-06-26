@@ -42,6 +42,7 @@ type Config struct {
 	collectors        map[string]bool
 	filterCollectors  filter.Filter
 
+	version      string
 	pollInterval time.Duration
 	ovc          *ovirtcollector.OVirtCollector
 
@@ -160,8 +161,9 @@ func (c *Config) Start() error {
 
 	// selfmonitoring
 	tags = map[string]string{
-		"alias":        c.InternalAlias,
-		"ovirt-engine": u.Hostname(),
+		"alias":             c.InternalAlias,
+		"ovirt-engine":      u.Hostname(),
+		"ovirtstat_version": c.version,
 	}
 	t = metric.TimeWithPrecision(time.Now(), intervalPrecision(c.pollInterval))
 	c.selfMon = metric.New("internal_ovirtstat", tags, nil, t)
@@ -182,6 +184,11 @@ func (c *Config) Stop() {
 func (c *Config) SetPollInterval(pollInterval time.Duration) error {
 	c.pollInterval = pollInterval
 	return nil
+}
+
+// SetVersion lets shim know this version
+func (c *Config) SetVersion(version string) {
+	c.version = version
 }
 
 // SampleConfig returns a set of default configuration to be used as a boilerplate when setting up
