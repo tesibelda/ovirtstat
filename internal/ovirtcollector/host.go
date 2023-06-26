@@ -10,15 +10,14 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/influxdata/telegraf"
-
 	ovirtsdk "github.com/ovirt/go-ovirt"
+	"github.com/tesibelda/lightmetric/metric"
 )
 
 // CollectHostInfo gathers oVirt host's info
 func (c *OVirtCollector) CollectHostInfo(
 	ctx context.Context,
-	acc telegraf.Accumulator,
+	acc metric.Accumulator,
 ) error {
 	var (
 		status              ovirtsdk.HostStatus

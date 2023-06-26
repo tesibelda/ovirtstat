@@ -10,15 +10,14 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/influxdata/telegraf"
-
 	ovirtsdk "github.com/ovirt/go-ovirt"
+	"github.com/tesibelda/lightmetric/metric"
 )
 
 // CollectAPISummaryInfo gathers oVirt api's summary info
 func (c *OVirtCollector) CollectAPISummaryInfo(
 	ctx context.Context,
-	acc telegraf.Accumulator,
+	acc metric.Accumulator,
 ) error {
 	var (
 		apiSvc    *ovirtsdk.SystemServiceGetResponse

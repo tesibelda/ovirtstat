@@ -17,10 +17,8 @@ import (
 
 	"github.com/influxdata/telegraf/filter"
 	"github.com/influxdata/telegraf/plugins/common/tls"
-
-	"github.com/tesibelda/ovirtstat/internal/netplus"
-
 	ovirtsdk "github.com/ovirt/go-ovirt"
+	"github.com/tesibelda/ovirtstat/internal/netplus"
 )
 
 // Common raised errors
@@ -39,7 +37,6 @@ type OVirtCollector struct {
 	filterClusters        filter.Filter
 	filterHosts           filter.Filter
 	filterVms             filter.Filter
-	maxResponseDuration   time.Duration
 	dataDuration          time.Duration
 	VcCache
 }
@@ -117,11 +114,6 @@ func (c *OVirtCollector) SetFilterVms(include, exclude []string) error {
 	return nil
 }
 
-// SetMaxResponseTime sets max response time to consider an esxcli command as notresponding
-func (c *OVirtCollector) SetMaxResponseTime(du time.Duration) {
-	c.maxResponseDuration = du
-}
-
 // Open opens a OVirt connection session
 func (c *OVirtCollector) Open(ctx context.Context, timeout time.Duration) error {
 	var err error
@@ -138,7 +130,7 @@ func (c *OVirtCollector) Open(ctx context.Context, timeout time.Duration) error 
 	return err
 }
 
-// IsActive returns if the OVirt connection is active or not
+// IsActive let us know if the OVirt connection is active or not
 func (c *OVirtCollector) IsActive(ctx context.Context) bool {
 	if c.conn != nil && c.conn.Test() == nil {
 		return true

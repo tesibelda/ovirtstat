@@ -10,14 +10,14 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/influxdata/telegraf"
 	ovirtsdk "github.com/ovirt/go-ovirt"
+	"github.com/tesibelda/lightmetric/metric"
 )
 
 // CollectVmsInfo gathers oVirt VMs info
 func (c *OVirtCollector) CollectVmsInfo(
 	ctx context.Context,
-	acc telegraf.Accumulator,
+	acc metric.Accumulator,
 ) error {
 	var (
 		status           ovirtsdk.VmStatus

@@ -11,25 +11,24 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"os"
+	"strings"
 	"time"
 
-	"github.com/influxdata/telegraf"
+	"github.com/BurntSushi/toml"
 	"github.com/influxdata/telegraf/filter"
 	"github.com/influxdata/telegraf/plugins/common/tls"
-	"github.com/influxdata/telegraf/plugins/inputs"
-	"github.com/influxdata/telegraf/selfstat"
-
+	"github.com/tesibelda/lightmetric/metric"
 	"github.com/tesibelda/ovirtstat/internal/ovirtcollector"
 )
 
 type Config struct {
 	tls.ClientConfig
-	OVirtURL      string          `toml:"ovirturl"`
-	Username      string          `toml:"username"`
-	Password      string          `toml:"password"`
-	Timeout       time.Duration   `toml:"timeout"`
-	InternalAlias string          `toml:"internal_alias"`
-	Log           telegraf.Logger `toml:"-"`
+	OVirtURL      string        `toml:"ovirturl"`
+	Username      string        `toml:"username"`
+	Password      string        `toml:"password"`
+	Timeout       time.Duration `toml:"timeout"`
+	InternalAlias string        `toml:"internal_alias"`
 
 	ClustersExclude []string `toml:"clusters_exclude"`
 	ClustersInclude []string `toml:"clusters_include"`
@@ -44,244 +43,252 @@ type Config struct {
 	filterCollectors  filter.Filter
 
 	pollInterval time.Duration
-	cancel       context.CancelFunc
 	ovc          *ovirtcollector.OVirtCollector
 
-	GatherTime      selfstat.Stat
-	SessionsCreated selfstat.Stat
+	selfMon     metric.Metric
+	gotAnAnswer bool
 }
 
 var sampleConfig = `
-  ## OVirt Engine URL to be monitored and its credential
-  ovirturl = "https://ovirt-engine.local/ovirt-engine/api"
-  username = "user@internal"
-  password = "secret"
-  timeout = "10s"
+## OVirt Engine URL to be monitored and its credential
+ovirturl = "https://ovirt-engine.local/ovirt-engine/api"
+username = "user@internal"
+password = "secret"
+timeout = "10s"
 
-  ## Optional SSL Config
-  # tls_ca = "/path/to/cafile"
-  ## Use SSL but skip chain & host verification
-  # insecure_skip_verify = false
+## Optional SSL Config
+# tls_ca = "/path/to/cafile"
+## Use SSL but skip chain & host verification
+# insecure_skip_verify = false
 
-  ## optional alias tag for internal metrics
-  # internal_alias = ""
+## optional alias tag for internal metrics
+# internal_alias = ""
 
-  ## Filter clusters by name, default is no filtering
-  ## cluster names can be specified as glob patterns
-  # clusters_include = []
-  # clusters_exclude = []
+## Filter clusters by name, default is no filtering
+## cluster names can be specified as glob patterns
+# clusters_include = []
+# clusters_exclude = []
 
-  ## Filter hosts by name, default is no filtering
-  ## host names can be specified as glob patterns
-  # hosts_include = []
-  # hosts_exclude = []
+## Filter hosts by name, default is no filtering
+## host names can be specified as glob patterns
+# hosts_include = []
+# hosts_exclude = []
 
-  ## Filter VMs by name, default is no filtering
-  ## VM names can be specified as glob patterns
-  # vms_include = []
-  # vms_exclude = []
+## Filter VMs by name, default is no filtering
+## VM names can be specified as glob patterns
+# vms_include = []
+# vms_exclude = []
 
-  ## Filter collectors by name, default is all collectors
-  ## see possible collector names bellow
-  # collectors_include = []
-  # collectors_exclude = []
+## Filter collectors by name, default is all collectors
+## see possible collector names bellow
+# collectors_include = []
+# collectors_exclude = []
 
-  #### collector names available are ####
-  ## Datacenters: datacenter stats in ovirtstat_datacenter measurement
-  ## GlusterVolumes: gluster volume stats in ovirtstat_glustervolume measurement
-  ## Hosts: hypervisor/host stats in ovirtstat_host measurement
-  ## StorageDomains: cluster stats in ovirtstat_storagedomains measurement
-  ## VMs: virtual machine stats in ovirtstat_vm measurement
+#### collector names available are ####
+## Datacenters: datacenter stats in ovirtstat_datacenter measurement
+## GlusterVolumes: gluster volume stats in ovirtstat_glustervolume measurement
+## Hosts: hypervisor/host stats in ovirtstat_host measurement
+## StorageDomains: cluster stats in ovirtstat_storagedomains measurement
+## VMs: virtual machine stats in ovirtstat_vm measurement
 `
 
-func init() {
-	inputs.Add("ovirtstat", func() telegraf.Input {
-		return &Config{
-			OVirtURL:      "https://ovirt-engine.local/ovirt-engine/api",
-			Username:      "user@internal",
-			Password:      "secret",
-			InternalAlias: "",
-			Timeout:       10 * time.Second,
-			pollInterval:  time.Second * 60,
-		}
-	})
+func New() *Config {
+	return &Config{
+		OVirtURL:      "https://ovirt-engine.local/ovirt-engine/api",
+		Username:      "user@internal",
+		Password:      "secret",
+		InternalAlias: "",
+		Timeout:       10 * time.Second,
+		pollInterval:  time.Second * 60,
+	}
 }
 
-// Init initializes internal ovirtstat variables with the provided configuration
-func (ovc *Config) Init() error {
-	var err error
-
-	if ovc.ovc != nil {
-		ovc.ovc.Close()
+// LoadConfig reads configuration and initializes internal variables
+func (c *Config) LoadConfig(filename string) error {
+	if _, err := toml.DecodeFile(filename, &c); err != nil {
+		return err
 	}
-	ovc.ovc, err = ovirtcollector.New(
-		ovc.OVirtURL,
-		ovc.Username,
-		ovc.Password,
-		&ovc.ClientConfig,
-		ovc.pollInterval,
+
+	// expand environment variables for user and pass
+	c.Username = expandVar(c.Username)
+	c.Password = expandVar(c.Password)
+
+	return nil
+}
+
+// Start initializes internal ovirtstat variables with the provided configuration
+func (c *Config) Start() error {
+	var (
+		tags map[string]string
+		u    *url.URL
+		t    time.Time
+		err  error
 	)
-	if err != nil {
+
+	if c.ovc != nil {
+		c.ovc.Close()
+	}
+	if c.ovc, err = ovirtcollector.New(
+		c.OVirtURL,
+		c.Username,
+		c.Password,
+		&c.ClientConfig,
+		c.pollInterval,
+	); err != nil {
 		return err
 	}
 
 	/// Set ovirtcollector options
-	ovc.ovc.SetDataDuration(time.Duration(ovc.pollInterval.Seconds() * 0.9))
-	ovc.ovc.SetMaxResponseTime(ovc.pollInterval)
-	err = ovc.ovc.SetFilterClusters(ovc.ClustersInclude, ovc.ClustersExclude)
-	if err != nil {
+	c.ovc.SetDataDuration(time.Duration(c.pollInterval.Seconds() * 0.9))
+	if err = c.ovc.SetFilterClusters(c.ClustersInclude, c.ClustersExclude); err != nil {
 		return fmt.Errorf("error parsing clusters filters: %w", err)
 	}
-	err = ovc.ovc.SetFilterHosts(ovc.HostsInclude, ovc.HostsExclude)
-	if err != nil {
+	if err = c.ovc.SetFilterHosts(c.HostsInclude, c.HostsExclude); err != nil {
 		return fmt.Errorf("error parsing hosts filters: %w", err)
 	}
-	err = ovc.ovc.SetFilterVms(ovc.VmsInclude, ovc.VmsExclude)
-	if err != nil {
+	if err = c.ovc.SetFilterVms(c.VmsInclude, c.VmsExclude); err != nil {
 		return fmt.Errorf("error parsing VMs filters: %w", err)
 	}
-	err = ovc.setFilterCollectors(ovc.CollectorsInclude, ovc.CollectorsExclude)
-	if err != nil {
+	if err = c.setFilterCollectors(c.CollectorsInclude, c.CollectorsExclude); err != nil {
 		return fmt.Errorf("error parsing collectors filters: %w", err)
 	}
 
-	// selfmonitoring
-	u, err := url.Parse(ovc.OVirtURL)
-	if err != nil {
-		return fmt.Errorf("error parsing URL for ovurl: %w", err)
+	// check OVirt URL
+	if u, err = url.Parse(c.OVirtURL); err != nil {
+		return fmt.Errorf("error parsing URL for OVirt: %w", err)
 	}
-	tags := map[string]string{
-		"alias":        ovc.InternalAlias,
+
+	// selfmonitoring
+	tags = map[string]string{
+		"alias":        c.InternalAlias,
 		"ovirt-engine": u.Hostname(),
 	}
-	ovc.GatherTime = selfstat.Register("ovirtstat", "gather_time_ns", tags)
-	ovc.SessionsCreated = selfstat.Register("ovirtstat", "sessions_created", tags)
+	t = metric.TimeWithPrecision(time.Now(), intervalPrecision(c.pollInterval))
+	c.selfMon = metric.New("internal_ovirtstat", tags, nil, t)
 
 	return err
 }
 
 // Stop is called from telegraf core when a plugin is stopped and allows it to
 // perform shutdown tasks.
-func (ovc *Config) Stop() {
-	if ovc.ovc != nil {
-		ovc.ovc.Close()
-		ovc.ovc = nil
+func (c *Config) Stop() {
+	if c.ovc != nil {
+		c.ovc.Close()
+		c.ovc = nil
 	}
-	ovc.cancel()
 }
 
 // SetPollInterval allows telegraf shim to tell ovirtstat the configured polling interval
-func (ovc *Config) SetPollInterval(pollInterval time.Duration) error {
-	ovc.pollInterval = pollInterval
+func (c *Config) SetPollInterval(pollInterval time.Duration) error {
+	c.pollInterval = pollInterval
 	return nil
 }
 
 // SampleConfig returns a set of default configuration to be used as a boilerplate when setting up
 // Telegraf.
-func (ovc *Config) SampleConfig() string {
+func (c *Config) SampleConfig() string {
 	return sampleConfig
 }
 
 // Description returns a short textual description of the plugin
-func (ovc *Config) Description() string {
+func (c *Config) Description() string {
 	return "Gathers status and basic stats from OVirt Engine"
 }
 
 // Gather is the main data collection function called by the Telegraf core. It performs all
 // the data collection and writes all metrics into the Accumulator passed as an argument.
-func (ovc *Config) Gather(acc telegraf.Accumulator) error {
-	var startTime time.Time
+func (c *Config) Gather(ctx context.Context, acc metric.Accumulator) error {
+	var t, startTime time.Time
 	var err error
 
-	// poll using a context with timeout
-	ctx, cancel := context.WithTimeout(context.Background(), ovc.pollInterval)
-	defer cancel()
-
 	startTime = time.Now()
-	if err = ovc.keepActiveSession(ctx, acc); err != nil {
+	if err = c.keepActiveSession(ctx, acc); err != nil {
 		return gatherError(ctx, err)
 	}
-	acc.SetPrecision(intervalPrecision(ovc.pollInterval))
+	acc.SetPrecision(intervalPrecision(c.pollInterval))
 
 	//--- Get OVirt, DCs and Clusters info
-	if err = ovc.gatherHighLevelEntities(ctx, acc); err != nil {
+	if err = c.gatherHighLevelEntities(ctx, acc); err != nil {
 		return gatherError(ctx, err)
 	}
 
 	//--- Get Hosts, Storage and VM info
-	if err = ovc.gatherHost(ctx, acc); err != nil {
+	if err = c.gatherHost(ctx, acc); err != nil {
 		return gatherError(ctx, err)
 	}
-	if err = ovc.gatherStorage(ctx, acc); err != nil {
+	if err = c.gatherStorage(ctx, acc); err != nil {
 		return gatherError(ctx, err)
 	}
-	if err = ovc.gatherVM(ctx, acc); err != nil {
+	if err = c.gatherVM(ctx, acc); err != nil {
 		return gatherError(ctx, err)
 	}
 
 	// selfmonitoring
-	ovc.GatherTime.Set(time.Since(startTime).Nanoseconds())
-	for _, m := range selfstat.Metrics() {
-		if m.Name() != "internal_agent" {
-			acc.AddMetric(m)
-		}
-	}
+	t = metric.TimeWithPrecision(time.Now(), intervalPrecision(c.pollInterval))
+	c.selfMon.SetTime(t)
+	c.selfMon.AddField("gather_time_ns", time.Since(startTime).Nanoseconds())
+	acc.AddMetric(c.selfMon)
 
 	return nil
 }
 
 // keepActiveSession keeps an active session with vsphere
-func (ovc *Config) keepActiveSession(
+func (c *Config) keepActiveSession(
 	ctx context.Context,
-	acc telegraf.Accumulator,
+	acc metric.Accumulator,
 ) error {
 	var col *ovirtcollector.OVirtCollector
 	var err error
 
-	col = ovc.ovc
-	if ctx.Err() != nil || col == nil {
-		if err = ovc.Init(); err != nil {
-			return fmt.Errorf("failed to initialize collector for %s: %w", ovc.OVirtURL, err)
+	if ctx.Err() != nil || c.ovc == nil {
+		if err = c.Start(); err != nil {
+			return fmt.Errorf("failed to initialize collector for %s: %w", c.OVirtURL, err)
 		}
 	}
+	col = c.ovc
 	if !col.IsActive(ctx) {
-		if ovc.SessionsCreated.Get() > 0 {
+		if c.gotAnAnswer {
 			acc.AddError(
-				fmt.Errorf(
-					"OVirt session not active, re-authenticating with %s",
-					ovc.OVirtURL,
-				),
+				fmt.Errorf("OVirt session not active, re-authenticating with %s", c.OVirtURL),
 			)
 		}
-		if err = col.Open(ctx, ovc.Timeout); err != nil {
-			return fmt.Errorf("failed to open connection with %s: %w", ovc.OVirtURL, err)
+		if err = col.Open(ctx, c.Timeout); err != nil {
+			return fmt.Errorf("failed to open connection with %s: %w", c.OVirtURL, err)
 		}
-		ovc.SessionsCreated.Incr(1)
+
+		// selfmonitoring
+		c.gotAnAnswer = true
+		f, ok := c.selfMon.GetField("sessions_created")
+		if ok {
+			c.selfMon.AddField("sessions_created", f.(int64)+1)
+		} else {
+			c.selfMon.AddField("sessions_created", int64(1))
+		}
 	}
 
 	return nil
 }
 
 // gatherHighLevelEntities gathers datacenters and clusters stats
-func (ovc *Config) gatherHighLevelEntities(
+func (c *Config) gatherHighLevelEntities(
 	ctx context.Context,
-	acc telegraf.Accumulator,
+	acc metric.Accumulator,
 ) error {
 	var col *ovirtcollector.OVirtCollector
 	var err error
 	var exist bool
 
-	if col = ovc.ovc; col == nil {
+	if col = c.ovc; col == nil {
 		return ovirtcollector.ErrorNoClient
 	}
 
 	//--- Get OVirt api summary stats
 	if err = col.CollectAPISummaryInfo(ctx, acc); err != nil {
-		return fmt.Errorf("could not to get API summary for %s: %w", ovc.OVirtURL, err)
+		return fmt.Errorf("could not to get API summary from %s: %w", c.OVirtURL, err)
 	}
 
 	//--- Get Datacenters info
-	if _, exist = ovc.collectors["Datacenters"]; exist {
+	if _, exist = c.collectors["Datacenters"]; exist {
 		err = col.CollectDatacenterInfo(ctx, acc)
 	}
 
@@ -289,18 +296,18 @@ func (ovc *Config) gatherHighLevelEntities(
 }
 
 // gatherHost gathers info and stats per host
-func (ovc *Config) gatherHost(
+func (c *Config) gatherHost(
 	ctx context.Context,
-	acc telegraf.Accumulator,
+	acc metric.Accumulator,
 ) error {
 	var col *ovirtcollector.OVirtCollector
 	var err error
 	var exist bool
 
-	if col = ovc.ovc; col == nil {
+	if col = c.ovc; col == nil {
 		return ovirtcollector.ErrorNoClient
 	}
-	if _, exist = ovc.collectors["Hosts"]; exist {
+	if _, exist = c.collectors["Hosts"]; exist {
 		err = col.CollectHostInfo(ctx, acc)
 	}
 
@@ -308,21 +315,21 @@ func (ovc *Config) gatherHost(
 }
 
 // gatherStorage gathers storage entities info
-func (ovc *Config) gatherStorage(
+func (c *Config) gatherStorage(
 	ctx context.Context,
-	acc telegraf.Accumulator,
+	acc metric.Accumulator,
 ) error {
 	var col *ovirtcollector.OVirtCollector
 	var err error
 	var exist bool
 
-	if col = ovc.ovc; col == nil {
+	if col = c.ovc; col == nil {
 		return ovirtcollector.ErrorNoClient
 	}
-	if _, exist = ovc.collectors["StorageDomains"]; exist {
+	if _, exist = c.collectors["StorageDomains"]; exist {
 		err = col.CollectDatastoresInfo(ctx, acc)
 	}
-	if _, exist = ovc.collectors["GlusterVolumes"]; exist {
+	if _, exist = c.collectors["GlusterVolumes"]; exist {
 		err = col.CollectGlusterVolumeInfo(ctx, acc)
 	}
 
@@ -330,15 +337,15 @@ func (ovc *Config) gatherStorage(
 }
 
 // gatherVM gathers virtual machine's info
-func (ovc *Config) gatherVM(ctx context.Context, acc telegraf.Accumulator) error {
+func (c *Config) gatherVM(ctx context.Context, acc metric.Accumulator) error {
 	var col *ovirtcollector.OVirtCollector
 	var err error
 	var exist bool
 
-	if col = ovc.ovc; col == nil {
+	if col = c.ovc; col == nil {
 		return ovirtcollector.ErrorNoClient
 	}
-	if _, exist = ovc.collectors["VMs"]; exist {
+	if _, exist = c.collectors["VMs"]; exist {
 		err = col.CollectVmsInfo(ctx, acc)
 	}
 
@@ -346,20 +353,20 @@ func (ovc *Config) gatherVM(ctx context.Context, acc telegraf.Accumulator) error
 }
 
 // setFilterCollectors sets collectors to use given the include and exclude filters
-func (ovc *Config) setFilterCollectors(include, exclude []string) error {
+func (c *Config) setFilterCollectors(include, exclude []string) error {
 	var allcollectors = []string{"Datacenters", "GlusterVolumes", "Hosts", "StorageDomains", "VMs"}
 	var err error
 
-	ovc.filterCollectors, err = filter.NewIncludeExcludeFilter(include, exclude)
+	c.filterCollectors, err = filter.NewIncludeExcludeFilter(include, exclude)
 	if err != nil {
 		return err
 	}
-	if ovc.collectors == nil {
-		ovc.collectors = make(map[string]bool)
+	if c.collectors == nil {
+		c.collectors = make(map[string]bool)
 	}
 	for _, coll := range allcollectors {
-		if ovc.filterCollectors.Match(coll) {
-			ovc.collectors[coll] = true
+		if c.filterCollectors.Match(coll) {
+			c.collectors[coll] = true
 		}
 	}
 
@@ -387,4 +394,11 @@ func intervalPrecision(interval time.Duration) time.Duration {
 	default:
 		return time.Nanosecond
 	}
+}
+
+func expandVar(vartoexp string) string {
+	if strings.HasPrefix(vartoexp, "$") {
+		return os.ExpandEnv(vartoexp)
+	}
+	return vartoexp
 }

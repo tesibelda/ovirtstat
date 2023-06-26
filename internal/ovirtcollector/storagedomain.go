@@ -10,15 +10,14 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/influxdata/telegraf"
-
 	ovirtsdk "github.com/ovirt/go-ovirt"
+	"github.com/tesibelda/lightmetric/metric"
 )
 
 // CollectDatastoresInfo gathers oVirt storagedomain's info
 func (c *OVirtCollector) CollectDatastoresInfo(
 	ctx context.Context,
-	acc telegraf.Accumulator,
+	acc metric.Accumulator,
 ) error {
 	var (
 		estatus                    ovirtsdk.ExternalStatus

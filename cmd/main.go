@@ -12,10 +12,12 @@ import (
 	"os"
 	"time"
 
-	"github.com/influxdata/telegraf/plugins/common/shim"
+	"github.com/tesibelda/lightmetric/shim"
 
 	"github.com/tesibelda/ovirtstat/plugins/inputs/ovirtstat"
 )
+
+const pluginName = "ovirtstat"
 
 // Version cotains the actual version of ovirtstat
 var Version string
@@ -25,7 +27,7 @@ func main() {
 		pollInterval = flag.Duration(
 			"poll_interval",
 			60*time.Second,
-			"how often to send metrics (default 1m)",
+			"how often to send metrics",
 		)
 		configFile  = flag.String("config", "", "path to the config file for this plugin")
 		showVersion = flag.Bool("version", false, "show ovirtstat version and exit")
@@ -35,40 +37,38 @@ func main() {
 	// parse command line options
 	flag.Parse()
 	if *showVersion {
-		fmt.Println("ovirtstat", Version)
+		fmt.Println(pluginName, Version)
 		os.Exit(0)
 	}
+	oV := ovirtstat.New()
 
-	// create the shim. This is what will run your plugins.
-	shim := shim.New()
-	if shim == nil {
-		fmt.Fprintf(os.Stderr, "Error creating telegraf shim\n")
-		os.Exit(1)
+	// load config an wait for stdin signal from telegraf to gather data
+	if *configFile != "" {
+		if err = oV.LoadConfig(*configFile); err != nil {
+			fmt.Fprintf(os.Stderr, "Error loading configuration: %s\n", err)
+			os.Exit(1)
+		}
 	}
-
-	// If no config is specified, all imported plugins are loaded.
-	// otherwise follow what the config asks for.
-	// Check for settings from a config toml file,
-	// (or just use whatever plugins were imported above)
-	if err = shim.LoadConfig(configFile); err != nil {
-		fmt.Fprintf(os.Stderr, "Error loading configuration: %s\n", err)
-		os.Exit(1)
+	if *pollInterval != 0 {
+		if err = oV.SetPollInterval(*pollInterval); err != nil {
+			fmt.Fprintf(os.Stderr, "Error setting poll interval: %s\n", err)
+			os.Exit(1)
+		}
 	}
-
-	// Tell ovirtstat shim the configured polling interval
-	vcCfg, ok := shim.Input.(*ovirtstat.Config)
-	if !ok {
-		fmt.Fprintf(os.Stderr, "Error getting shim input as ovirtstat Config\n")
-		os.Exit(1)
-	}
-	if err = vcCfg.SetPollInterval(*pollInterval); err != nil {
-		fmt.Fprintf(os.Stderr, "Error setting ovirtstat shim polling interval: %s\n", err)
-		os.Exit(1)
+	if oV.Timeout > *pollInterval {
+		fmt.Fprintf(
+			os.Stderr,
+			"Timeout cannot be greater than poll_interval so using %s\n",
+			*pollInterval,
+		)
+		oV.Timeout = *pollInterval
 	}
 
 	// run a single plugin until stdin closes or we receive a termination signal
-	if err = shim.Run(*pollInterval); err != nil {
-		fmt.Fprintf(os.Stderr, "Error running telegraf shim: %s\n", err)
+	execd := shim.New(pluginName).WithPrecision(time.Second)
+	if err = execd.RunInput(oV.Gather); err != nil {
+		fmt.Fprintf(os.Stderr, "Error running oVirt Engine collector: %s\n", err)
 		os.Exit(2)
 	}
+	oV.Stop()
 }

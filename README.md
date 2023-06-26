@@ -17,47 +17,46 @@ Latest releases are built with a go-ovirt library version that should work with 
 * Edit ovirtstat.conf file as needed. Example:
 
 ```toml
-[[inputs.ovirtstat]]
-  ## OVirt Engine URL to be monitored and its credential
-  ovirturl = "https://ovirt-engine.local/ovirt-engine/api"
-  username = "user@internal"
-  password = "secret"
-  timeout = "10s"
+## OVirt Engine URL to be monitored and its credential
+ovirturl = "https://ovirt-engine.local/ovirt-engine/api"
+username = "user@internal"
+password = "secret"
+timeout = "10s"
 
-  ## Optional SSL Config
-  # tls_ca = "/path/to/cafile"
-  ## Use SSL but skip chain & host verification
-  # insecure_skip_verify = false
+## Optional SSL Config
+# tls_ca = "/path/to/cafile"
+## Use SSL but skip chain & host verification
+# insecure_skip_verify = false
 
-  ## optional alias tag for internal metrics
-  # internal_alias = ""
+## optional alias tag for internal metrics
+# internal_alias = ""
 
-  ## Filter clusters by name, default is no filtering
-  ## cluster names can be specified as glob patterns
-  # clusters_include = []
-  # clusters_exclude = []
+## Filter clusters by name, default is no filtering
+## cluster names can be specified as glob patterns
+# clusters_include = []
+# clusters_exclude = []
 
-  ## Filter hosts by name, default is no filtering
-  ## host names can be specified as glob patterns
-  # hosts_include = []
-  # hosts_exclude = []
+## Filter hosts by name, default is no filtering
+## host names can be specified as glob patterns
+# hosts_include = []
+# hosts_exclude = []
 
-  ## Filter VMs by name, default is no filtering
-  ## VM names can be specified as glob patterns
-  # vms_include = []
-  # vms_exclude = []
+## Filter VMs by name, default is no filtering
+## VM names can be specified as glob patterns
+# vms_include = []
+# vms_exclude = []
 
-  ## Filter collectors by name, default is all collectors
-  ## see possible collector names bellow
-  # collectors_include = []
-  # collectors_exclude = []
+## Filter collectors by name, default is all collectors
+## see possible collector names bellow
+# collectors_include = []
+# collectors_exclude = []
 
-  #### collector names available are (details in METRICS.md) ####
-  ## Datacenters: datacenter stats in ovirtstat_datacenter measurement
-  ## GlusterVolumes: gluster volume stats in ovirtstat_glustervolume measurement
-  ## Hosts: hypervisor/host stats in ovirtstat_host measurement
-  ## StorageDomains: cluster stats in ovirtstat_storagedomains measurement
-  ## VMs: virtual machine stats in ovirtstat_vm measurement
+#### collector names available are (details in METRICS.md) ####
+## Datacenters: datacenter stats in ovirtstat_datacenter measurement
+## GlusterVolumes: gluster volume stats in ovirtstat_glustervolume measurement
+## Hosts: hypervisor/host stats in ovirtstat_host measurement
+## StorageDomains: cluster stats in ovirtstat_storagedomains measurement
+## VMs: virtual machine stats in ovirtstat_vm measurement
 ```
 
 * Edit telegraf's execd input configuration as needed. Example:
@@ -66,7 +65,7 @@ Latest releases are built with a go-ovirt library version that should work with 
 ## Gather oVirt Engine status and basic stats
 [[inputs.execd]]
   command = ["/path/to/ovirtstat_binary", "--config", "/path/to/ovirtstat.conf"]
-  signal = "none"
+  signal = "STDIN"
 ```
 
 You can optionally tell ovirtstat the input's interval by adding --poll_interval <the_interval> parameters to the command. By default it expects 1m interval. If you want 30s interval configure it like this:
@@ -75,7 +74,7 @@ You can optionally tell ovirtstat the input's interval by adding --poll_interval
 [[inputs.execd]]
   interval = "30s"
   command = ["/path/to/ovirtstat_binary", "--config", "/path/to/ovirtstat.conf", "--poll_interval", "30s"]
-  signal = "none"
+  signal = "STDIN"
 ```
 Metric timestamp precision will be set according to the polling interval, so it will usually be 1s.
 
