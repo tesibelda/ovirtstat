@@ -89,7 +89,7 @@ Metric timestamp precision will be set according to the polling interval, so it 
 /path/to/ovirtstat --config /path/to/ovirtstat.conf
 ```
 
-* Wait for the poll_interval or press enter. You should see lines like those in the Example output below.
+* Press enter to force the collectin of metrics. You should see lines like those in the Example output below.
 
 
 # Example output

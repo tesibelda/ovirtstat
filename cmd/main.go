@@ -30,7 +30,7 @@ func main() {
 			"how often to send metrics",
 		)
 		configFile  = flag.String("config", "", "path to the config file for this plugin")
-		showVersion = flag.Bool("version", false, "show ovirtstat version and exit")
+		showVersion = flag.Bool("version", false, "display ovirtstat version and exit")
 		err         error
 	)
 
@@ -42,6 +42,23 @@ func main() {
 	}
 	oV := ovirtstat.New()
 	oV.SetVersion(Version)
+	for _, col := range flag.Args() {
+		switch col {
+		case "help":
+			help()
+			os.Exit(0)
+		case "version":
+			fmt.Println(pluginName, Version)
+			os.Exit(0)
+		case "config":
+			fmt.Println(oV.SampleConfig())
+			os.Exit(0)
+		case "run":
+		default:
+			help()
+			os.Exit(1)
+		}
+	}
 
 	// load config an wait for stdin signal from telegraf to gather data
 	if *configFile != "" {
@@ -72,4 +89,13 @@ func main() {
 		os.Exit(2)
 	}
 	oV.Stop()
+}
+
+func help() {
+	fmt.Println(pluginName + " [--help] [--config <FILE>] command")
+	fmt.Println("COMMANDS:")
+	fmt.Println("  help    Display options and commands and exit")
+	fmt.Println("  config  Display full sample configuration and exit")
+	fmt.Println("  version Display current version and exit")
+	fmt.Println("  run     Run as telegraf execd input plugin using signal=stdin. This is the default command.")
 }
