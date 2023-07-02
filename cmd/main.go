@@ -30,12 +30,17 @@ func main() {
 			"how often to send metrics",
 		)
 		configFile  = flag.String("config", "", "path to the config file for this plugin")
+		showHelp    = flag.Bool("help", false, "display help and exit")
 		showVersion = flag.Bool("version", false, "display ovirtstat version and exit")
 		err         error
 	)
 
 	// parse command line options
 	flag.Parse()
+	if *showHelp {
+		help()
+		os.Exit(0)
+	}
 	if *showVersion {
 		fmt.Println(pluginName, Version)
 		os.Exit(0)
@@ -92,10 +97,11 @@ func main() {
 }
 
 func help() {
-	fmt.Println(pluginName + " [--help] [--config <FILE>] command")
+	fmt.Println(pluginName + " [--help] [--config <FILE>] [--poll_interval <duration>] command")
 	fmt.Println("COMMANDS:")
 	fmt.Println("  help    Display options and commands and exit")
 	fmt.Println("  config  Display full sample configuration and exit")
+	fmt.Println("  poll_interval  Sets poll interval duration (default is 1m)")
 	fmt.Println("  version Display current version and exit")
 	fmt.Println("  run     Run as telegraf execd input plugin using signal=stdin. This is the default command.")
 }
