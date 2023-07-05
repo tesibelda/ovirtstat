@@ -17,7 +17,7 @@ import (
 // CollectGlusterVolumeInfo gathers oVirt glustervolume's info
 func (c *OVirtCollector) CollectGlusterVolumeInfo(
 	ctx context.Context,
-	acc metric.Accumulator,
+	acc *metric.Accumulator,
 ) error {
 	var (
 		status               ovirtsdk.GlusterVolumeStatus

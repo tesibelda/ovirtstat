@@ -58,10 +58,10 @@ github.com/sirupsen/logrus v1.9.0 h1:trlNQbNUG3OdDrDil03MCb1H2o9nJ1x4/5LYw7byDE0
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
 github.com/stretchr/testify v1.8.4 h1:CcVxjf3Q8PM0mHUKJCdn+eZZtm5yQwehR5yeSVQQcUk=
-github.com/tesibelda/lightmetric/metric v0.0.0-20230611113744-7ad03904a8bd h1:nBJSQvJx3jtsxx3LpgVTS9m9B1OZaPXc2ghTUU61YAE=
-github.com/tesibelda/lightmetric/metric v0.0.0-20230611113744-7ad03904a8bd/go.mod h1:bS9IUp+ue9CcbRNZh6+qQ9ARBj6xeQM50SG8dUak6EA=
-github.com/tesibelda/lightmetric/shim v0.0.0-20230611113744-7ad03904a8bd h1:olXObJr4ee3b2qqv7qPoUzdTfkxLqEDWlITzm8t/A9c=
-github.com/tesibelda/lightmetric/shim v0.0.0-20230611113744-7ad03904a8bd/go.mod h1:nL8CQrFwkZ5G1Kp6Wjsh8K/YhiSYn2c0mWMxRoILmJM=
+github.com/tesibelda/lightmetric/metric v0.0.0-20230705071445-96cf12c4ed8e h1:UCwU2AWze8vIYsojDE+7h+kldOHh3oByPNdEW9t9Zqg=
+github.com/tesibelda/lightmetric/metric v0.0.0-20230705071445-96cf12c4ed8e/go.mod h1:bS9IUp+ue9CcbRNZh6+qQ9ARBj6xeQM50SG8dUak6EA=
+github.com/tesibelda/lightmetric/shim v0.0.0-20230705071445-96cf12c4ed8e h1:fNFUMuXehXuof42gqzzrVyxpseEcP8OBzeWLbQ3fVak=
+github.com/tesibelda/lightmetric/shim v0.0.0-20230705071445-96cf12c4ed8e/go.mod h1:nL8CQrFwkZ5G1Kp6Wjsh8K/YhiSYn2c0mWMxRoILmJM=
 github.com/testcontainers/testcontainers-go v0.18.0 h1:8RXrcIQv5xX/uBOSmZd297gzvA7F0yuRA37/918o7Yg=
 golang.org/x/mod v0.10.0 h1:lFO9qtOdlre5W1jxS3r/4szv2/6iXxScdzjoBMXNhYk=
 golang.org/x/net v0.10.0 h1:X2//UzNDwYmtCLn7To6G58Wr6f5ahEAQgKNzv9Y951M=

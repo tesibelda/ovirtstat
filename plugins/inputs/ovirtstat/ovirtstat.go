@@ -204,7 +204,7 @@ func (c *Config) Description() string {
 
 // Gather is the main data collection function called by the Telegraf core. It performs all
 // the data collection and writes all metrics into the Accumulator passed as an argument.
-func (c *Config) Gather(ctx context.Context, acc metric.Accumulator) error {
+func (c *Config) Gather(ctx context.Context, acc *metric.Accumulator) error {
 	var t, startTime time.Time
 	var err error
 
@@ -242,7 +242,7 @@ func (c *Config) Gather(ctx context.Context, acc metric.Accumulator) error {
 // keepActiveSession keeps an active session with vsphere
 func (c *Config) keepActiveSession(
 	ctx context.Context,
-	acc metric.Accumulator,
+	acc *metric.Accumulator,
 ) error {
 	var col *ovirtcollector.OVirtCollector
 	var err error
@@ -279,7 +279,7 @@ func (c *Config) keepActiveSession(
 // gatherHighLevelEntities gathers datacenters and clusters stats
 func (c *Config) gatherHighLevelEntities(
 	ctx context.Context,
-	acc metric.Accumulator,
+	acc *metric.Accumulator,
 ) error {
 	var col *ovirtcollector.OVirtCollector
 	var err error
@@ -305,7 +305,7 @@ func (c *Config) gatherHighLevelEntities(
 // gatherHost gathers info and stats per host
 func (c *Config) gatherHost(
 	ctx context.Context,
-	acc metric.Accumulator,
+	acc *metric.Accumulator,
 ) error {
 	var col *ovirtcollector.OVirtCollector
 	var err error
@@ -324,7 +324,7 @@ func (c *Config) gatherHost(
 // gatherStorage gathers storage entities info
 func (c *Config) gatherStorage(
 	ctx context.Context,
-	acc metric.Accumulator,
+	acc *metric.Accumulator,
 ) error {
 	var col *ovirtcollector.OVirtCollector
 	var err error
@@ -344,7 +344,7 @@ func (c *Config) gatherStorage(
 }
 
 // gatherVM gathers virtual machine's info
-func (c *Config) gatherVM(ctx context.Context, acc metric.Accumulator) error {
+func (c *Config) gatherVM(ctx context.Context, acc *metric.Accumulator) error {
 	var col *ovirtcollector.OVirtCollector
 	var err error
 	var exist bool

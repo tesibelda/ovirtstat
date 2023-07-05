@@ -17,7 +17,7 @@ import (
 // CollectAPISummaryInfo gathers oVirt api's summary info
 func (c *OVirtCollector) CollectAPISummaryInfo(
 	ctx context.Context,
-	acc metric.Accumulator,
+	acc *metric.Accumulator,
 ) error {
 	var (
 		apiSvc    *ovirtsdk.SystemServiceGetResponse

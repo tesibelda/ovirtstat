@@ -17,7 +17,7 @@ import (
 // CollectDatacenterInfo gathers oVirt datacenter's info
 func (c *OVirtCollector) CollectDatacenterInfo(
 	ctx context.Context,
-	acc metric.Accumulator,
+	acc *metric.Accumulator,
 ) error {
 	var (
 		status    ovirtsdk.DataCenterStatus

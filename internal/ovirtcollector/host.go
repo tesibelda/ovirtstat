@@ -17,7 +17,7 @@ import (
 // CollectHostInfo gathers oVirt host's info
 func (c *OVirtCollector) CollectHostInfo(
 	ctx context.Context,
-	acc metric.Accumulator,
+	acc *metric.Accumulator,
 ) error {
 	var (
 		status              ovirtsdk.HostStatus

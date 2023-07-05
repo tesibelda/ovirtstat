@@ -17,7 +17,7 @@ import (
 // CollectVmsInfo gathers oVirt VMs info
 func (c *OVirtCollector) CollectVmsInfo(
 	ctx context.Context,
-	acc metric.Accumulator,
+	acc *metric.Accumulator,
 ) error {
 	var (
 		status           ovirtsdk.VmStatus

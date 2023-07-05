@@ -17,7 +17,7 @@ import (
 // CollectDatastoresInfo gathers oVirt storagedomain's info
 func (c *OVirtCollector) CollectDatastoresInfo(
 	ctx context.Context,
-	acc metric.Accumulator,
+	acc *metric.Accumulator,
 ) error {
 	var (
 		estatus                    ovirtsdk.ExternalStatus
