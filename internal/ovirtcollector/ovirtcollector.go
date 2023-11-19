@@ -115,7 +115,7 @@ func (c *OVirtCollector) SetFilterVms(include, exclude []string) error {
 }
 
 // Open opens a OVirt connection session
-func (c *OVirtCollector) Open(ctx context.Context, timeout time.Duration) error {
+func (c *OVirtCollector) Open(_ context.Context, timeout time.Duration) error {
 	var err error
 
 	c.conn, err = ovirtsdk.NewConnectionBuilder().
@@ -131,7 +131,7 @@ func (c *OVirtCollector) Open(ctx context.Context, timeout time.Duration) error 
 }
 
 // IsActive let us know if the OVirt connection is active or not
-func (c *OVirtCollector) IsActive(ctx context.Context) bool {
+func (c *OVirtCollector) IsActive(_ context.Context) bool {
 	if c.conn != nil && c.conn.Test() == nil {
 		return true
 	}

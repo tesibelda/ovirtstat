@@ -16,7 +16,7 @@ import (
 
 // CollectAPISummaryInfo gathers oVirt api's summary info
 func (c *OVirtCollector) CollectAPISummaryInfo(
-	ctx context.Context,
+	_ context.Context,
 	acc *metric.Accumulator,
 ) error {
 	var (

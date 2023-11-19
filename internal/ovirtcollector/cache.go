@@ -25,7 +25,7 @@ type VcCache struct {
 	lastVMUpdate time.Time
 }
 
-func (c *OVirtCollector) getDatacentersAndClusters(ctx context.Context) error {
+func (c *OVirtCollector) getDatacentersAndClusters(_ context.Context) error {
 	if time.Since(c.lastDCUpdate) < c.dataDuration {
 		return nil
 	}
@@ -121,7 +121,7 @@ func (c *OVirtCollector) getAllDatacentersVMs(ctx context.Context) error {
 		return err
 	}
 
-	// Get all VMs
+	// Get all	 VMs
 	vmsService := c.conn.SystemService().VmsService()
 	vmsResponse, err := vmsService.List().Send()
 	if err != nil {
