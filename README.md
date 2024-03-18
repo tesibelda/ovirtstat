@@ -19,6 +19,8 @@ Latest releases are built with a go-ovirt library version that should work with 
 ```toml
 ## OVirt Engine URL to be monitored and its credential
 ovirturl = "https://ovirt-engine.local/ovirt-engine/api"
+## User and password of the REST API.
+## Use "user@ovirt@internalsso" schema for oVirt 4.5.1 or greater
 username = "user@internal"
 password = "secret"
 timeout = "10s"
