@@ -7,6 +7,7 @@ package ovirtcollector
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -45,7 +46,7 @@ func (c *OVirtCollector) CollectDatastoresInfo(
 
 	for _, sd := range c.sds.Slice() {
 		if id, ok = sd.Id(); !ok {
-			acc.AddError(fmt.Errorf("found a storagedomain without Id, skipping"))
+			acc.AddError(errors.New("found a storagedomain without Id, skipping"))
 			continue
 		}
 		if name, ok = sd.Name(); !ok {

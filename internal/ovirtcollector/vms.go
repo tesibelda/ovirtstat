@@ -7,6 +7,7 @@ package ovirtcollector
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -49,11 +50,11 @@ func (c *OVirtCollector) CollectVmsInfo(
 
 	for _, vm := range c.vms.Slice() {
 		if id, ok = vm.Id(); !ok {
-			acc.AddError(fmt.Errorf("found a VM without Id, skipping"))
+			acc.AddError(errors.New("found a VM without Id, skipping"))
 			continue
 		}
 		if name, ok = vm.Name(); !ok {
-			acc.AddError(fmt.Errorf("found a VM without Name, skipping"))
+			acc.AddError(errors.New("found a VM without Name, skipping"))
 			continue
 		}
 		if !c.filterVms.Match(name) {

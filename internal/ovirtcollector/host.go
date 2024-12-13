@@ -7,6 +7,7 @@ package ovirtcollector
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -50,11 +51,11 @@ func (c *OVirtCollector) CollectHostInfo(
 
 	for _, host := range c.hosts.Slice() {
 		if id, ok = host.Id(); !ok {
-			acc.AddError(fmt.Errorf("found a host without Id, skipping"))
+			acc.AddError(errors.New("found a host without Id, skipping"))
 			continue
 		}
 		if name, ok = host.Name(); !ok {
-			acc.AddError(fmt.Errorf("found a host without Name, skipping"))
+			acc.AddError(errors.New("found a host without Name, skipping"))
 			continue
 		}
 		if !c.filterHosts.Match(name) {

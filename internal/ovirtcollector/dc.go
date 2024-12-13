@@ -7,6 +7,7 @@ package ovirtcollector
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -40,11 +41,11 @@ func (c *OVirtCollector) CollectDatacenterInfo(
 
 	for _, dc := range c.dcs.Slice() {
 		if id, ok = dc.Id(); !ok {
-			acc.AddError(fmt.Errorf("found a datacenter without Id, skipping"))
+			acc.AddError(errors.New("found a datacenter without Id, skipping"))
 			continue
 		}
 		if name, ok = dc.Name(); !ok {
-			acc.AddError(fmt.Errorf("found a datacenter without Name, skipping"))
+			acc.AddError(errors.New("found a datacenter without Name, skipping"))
 			continue
 		}
 		if status, ok = dc.Status(); !ok {

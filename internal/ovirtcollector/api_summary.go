@@ -7,6 +7,7 @@ package ovirtcollector
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -38,7 +39,7 @@ func (c *OVirtCollector) CollectAPISummaryInfo(
 		return err
 	}
 	if api, ok = apiSvc.Api(); !ok {
-		return fmt.Errorf("could not get oVirt API data")
+		return errors.New("could not get oVirt API data")
 	}
 	t = time.Now()
 

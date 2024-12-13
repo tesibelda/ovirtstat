@@ -7,6 +7,7 @@ package ovirtcollector
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -48,7 +49,7 @@ func (c *OVirtCollector) CollectGlusterVolumeInfo(
 
 	for _, cl = range c.clusters.Slice() {
 		if clname, ok = cl.Name(); !ok {
-			acc.AddError(fmt.Errorf("found a cluster without Name, skipping"))
+			acc.AddError(errors.New("found a cluster without Name, skipping"))
 			continue
 		}
 		if !c.filterClusters.Match(clname) {
@@ -61,11 +62,11 @@ func (c *OVirtCollector) CollectGlusterVolumeInfo(
 		dcname = c.clusterDatacenterName(cl)
 		for _, gv := range gvs.Slice() {
 			if id, ok = gv.Id(); !ok {
-				acc.AddError(fmt.Errorf("found a gluster volume without Id, skipping"))
+				acc.AddError(errors.New("found a gluster volume without Id, skipping"))
 				continue
 			}
 			if name, ok = gv.Name(); !ok {
-				acc.AddError(fmt.Errorf("vound a gluster volume without Name, skipping"))
+				acc.AddError(errors.New("vound a gluster volume without Name, skipping"))
 				continue
 			}
 			gvtype, _ = gv.VolumeType()
