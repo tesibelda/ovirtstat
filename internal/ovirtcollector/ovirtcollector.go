@@ -17,7 +17,7 @@ import (
 
 	"github.com/influxdata/telegraf/filter"
 	"github.com/influxdata/telegraf/plugins/common/tls"
-	ovirtsdk "github.com/ovirt/go-ovirt"
+	ovirtsdk "github.com/ovirt/go-ovirt/v4"
 	"github.com/tesibelda/ovirtstat/internal/netplus"
 )
 
